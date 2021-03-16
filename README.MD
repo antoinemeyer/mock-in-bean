@@ -1,6 +1,6 @@
 # Mock in Bean
 
-@MockInBean and @SpyInBean are alternatives to @MockBean and @SpyBean for Spring Boot 2 tests *(>= 2.2.0)*.
+[@MockInBean](src/main/java/com/teketik/test/mockinbean/MockInBean.java) and [@SpyInBean](src/main/java/com/teketik/test/mockinbean/SpyInBean.java) are alternatives to @MockBean and @SpyBean for Spring Boot 2 tests *(>= 2.2.0)*.
 
 They surgically replace a field value in a Spring Bean by a Mock/Spy for the duration of a test and set back the original value afterwards, leaving the Spring Context clean.
 

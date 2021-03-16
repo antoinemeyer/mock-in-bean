@@ -12,7 +12,7 @@ They surgically replace a field value in a Spring Bean by a Mock/Spy for the dur
 
 Spring Context pollution was a fairly common problem before the introduction of @MockBean and @SpyBean. Many developers would inject mocks in beans during tests through `@InjectMock` or using manual setters and often forget to set back the original field values which would leave the spring context polluted and cause test failures in unrelated tests.
 
-@MockBean and @SpyBean solved this issue by providing Mockito injection directly in the Spring Context but introduced an undesirable side-effect: their usage dirties the context and may lead to the recreation of new spring contexts for any unique combination, which can be incredibly time-consuming. See [The Problems with @MockBean](https://www.baeldung.com/spring-tests#2-the-problems-withmockbean)
+@MockBean and @SpyBean solved this issue by providing Mockito injection directly in the Spring Context but introduced an undesirable side-effect: their usage dirties the context and may lead to the re-creation of new spring contexts for any unique combination, which can be incredibly time-consuming. See [The Problems with @MockBean](https://www.baeldung.com/spring-tests#2-the-problems-withmockbean)
 
 ### The solution:
 

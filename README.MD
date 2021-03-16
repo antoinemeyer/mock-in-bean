@@ -70,6 +70,7 @@ public class MyServiceTest {
 ```
 
 **What happens**:
+
 Before each test:
   - `MyServiceTest.thirdPartyService` will be created as a mock and injected in the target of @MockInBean: `MyService`.
   - `MyServiceTest.expensiveProcessor` will be created as a spy of the bean `expensiveProcessor` and injected in the target of @SpyInBean: `MyService`.

@@ -1,12 +1,12 @@
 package org.springframework.boot.test.mock.mockito;
 
 import com.teketik.test.mockinbean.MockInBean;
+import com.teketik.test.mockinbean.MockInBeans;
 import com.teketik.test.mockinbean.SpyInBean;
+import com.teketik.test.mockinbean.SpyInBeans;
 
 import org.springframework.core.ResolvableType;
-import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -36,15 +36,12 @@ class InBeanDefinitionsParser {
     }
 
     private void parseField(Field element, Class<?> source) {
-        final MergedAnnotations annotations = MergedAnnotations.from(element, SearchStrategy.SUPERCLASS);
-        annotations
-            .stream(MockInBean.class)
-            .map(MergedAnnotation::synthesize)
-            .forEach((annotation) -> parseMockInBeanAnnotation(annotation, element, source));
-        annotations
-            .stream(SpyInBean.class)
-            .map(MergedAnnotation::synthesize)
-            .forEach((annotation) -> parseSpyInBeanAnnotation(annotation, element, source));
+        for (MockInBean annotation: AnnotationUtils.getRepeatableAnnotations(element, MockInBean.class, MockInBeans.class)) {
+            parseMockInBeanAnnotation(annotation, element, source);
+        }
+        for (SpyInBean annotation: AnnotationUtils.getRepeatableAnnotations(element, SpyInBean.class, SpyInBeans.class)) {
+            parseSpyInBeanAnnotation(annotation, element, source);
+        }
     }
 
     private void parseMockInBeanAnnotation(MockInBean annotation, Field field, Class<?> source) {

@@ -25,7 +25,7 @@ class MultipleMockDefinitionForAFieldTest extends BaseTest {
         public void beforeTestClass(TestContext testContext) throws Exception {
             try {
                 super.beforeTestClass(testContext);
-                Assertions.fail();
+                Assertions.fail("should have thrown exception");
             } catch (IllegalArgumentException e) {
                 Assertions.assertEquals(
                     "private com.teketik.mockinbean.components.MockableComponent1 com.teketik.mockinbean.components.TestComponentBase.mockableComponent1 can only be mapped once, as a mock or a spy, not both!",

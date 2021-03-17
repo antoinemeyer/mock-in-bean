@@ -43,7 +43,7 @@ class BeanUtils_FindBeanTest {
     public void testFindBean_notFound() {
         try {
             BeanUtils.findBean(Long.class, "does not matter", applicationContext);
-            Assertions.fail();
+            Assertions.fail("should have thrown exception");
         } catch (IllegalArgumentException e) {
             Assertions.assertEquals("No beans of type class java.lang.Long", e.getMessage());
         }
@@ -69,7 +69,7 @@ class BeanUtils_FindBeanTest {
     public void testFindBean_noName() {
         try {
             BeanUtils.findBean(Integer.class, null, applicationContext);
-            Assertions.fail();
+            Assertions.fail("should have thrown exception");
         } catch (IllegalArgumentException e) {
             Assertions.assertEquals("Multiple beans of type class java.lang.Integer. A name must be provided", e.getMessage());
         }
@@ -77,15 +77,15 @@ class BeanUtils_FindBeanTest {
 
     @Test
     public void testFindBean_multiTypeAndName() {
-        Assertions.assertEquals(FindBeanTestConfig.INT_1, BeanUtils.findBean(Integer.class, "int1", applicationContext));
-        Assertions.assertEquals(FindBeanTestConfig.INT_2, BeanUtils.findBean(Integer.class, "int2", applicationContext));
+        Assertions.assertEquals(FindBeanTestConfig.INT_1, BeanUtils.findBean(Integer.class, "int1", applicationContext).intValue());
+        Assertions.assertEquals(FindBeanTestConfig.INT_2, BeanUtils.findBean(Integer.class, "int2", applicationContext).intValue());
     }
 
     @Test
     public void testFindBean_multiTypeAndNameNotFound() {
         try {
             BeanUtils.findBean(Integer.class, "int3", applicationContext);
-            Assertions.fail();
+            Assertions.fail("should have thrown exception");
         } catch (IllegalArgumentException e) {
             Assertions.assertEquals("No beans of type class java.lang.Integer and name int3", e.getMessage());
         }

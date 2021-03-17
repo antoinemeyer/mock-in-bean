@@ -24,7 +24,7 @@ class InvalidBeanNameUnResolvedTest extends BaseTest {
         public void beforeTestClass(TestContext testContext) throws Exception {
             try {
                 super.beforeTestClass(testContext);
-                Assertions.fail();
+                Assertions.fail("should have thrown exception");
             } catch (IllegalArgumentException e) {
                 Assertions.assertEquals(
                     "No beans of type class com.teketik.mockinbean.components.TestComponent3 and name invalid name",

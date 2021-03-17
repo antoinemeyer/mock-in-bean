@@ -26,19 +26,19 @@ class BeanUtils_findFieldTest {
     public void testFindField_multiMatch() {
         try {
             BeanUtils.findField(Clazz1.class, null, String.class).getName();
-            Assertions.fail();
+            Assertions.fail("should have thrown exception");
         } catch (IllegalArgumentException e) {
             Assertions.assertEquals("Multiple fields of type class java.lang.String in class org.springframework.boot.test.mock.mockito.BeanUtils_findFieldTest$Clazz1. Please specify a name.", e.getMessage());
         }
         try {
             BeanUtils.findField(Clazz1.class, "baseField", String.class).getName();
-            Assertions.fail();
+            Assertions.fail("should have thrown exception");
         } catch (IllegalArgumentException e) {
             Assertions.assertEquals("Multiple fields of type class java.lang.String in class org.springframework.boot.test.mock.mockito.BeanUtils_findFieldTest$Clazz1 with name baseField", e.getMessage());
         }
         try {
             BeanUtils.findField(Clazz1.class, "no match", String.class).getName();
-            Assertions.fail();
+            Assertions.fail("should have thrown exception");
         } catch (IllegalArgumentException e) {
             Assertions.assertEquals("Multiple fields of type class java.lang.String in class org.springframework.boot.test.mock.mockito.BeanUtils_findFieldTest$Clazz1 and none with name no match", e.getMessage());
         }

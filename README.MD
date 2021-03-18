@@ -93,7 +93,7 @@ Simply include the maven dependency (from central maven) to start using @MockInB
 
 @MockInBean and @SpyInBean also support:
   - Injection in multiple spring beans: *Repeat the annotation on your field*.
-  - Replacement of beans with different names: *Specify a `name` in your annotation*.
+  - Injection in bean identified by name if multiple instances exist in the context: *Specify a `name` in your annotation*.
   
 Checkout the javadoc for more information.
 

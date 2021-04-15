@@ -10,9 +10,9 @@ They surgically replace a field value in a Spring Bean by a Mock/Spy for the dur
 
 ## The problem:
 
-Spring Context pollution was a fairly common problem before the introduction of @MockBean and @SpyBean. Many developers would inject mocks in beans during tests through `@InjectMock` or using manual setters and often forget to set back the original field values which would leave the spring context polluted and cause test failures in unrelated tests.
+Spring Context pollution was a fairly common problem before the introduction of @MockBean and @SpyBean. Many developers would inject mocks in beans during tests through `@InjectMock` or using manual setters and often forget to set back the original field values which would leave the Spring context polluted and cause test failures in unrelated tests.
 
-@MockBean and @SpyBean solved this issue by providing Mockito injection directly in the Spring Context but introduced an undesirable side-effect: their usage dirties the context and may lead to the re-creation of new spring contexts for any unique combination, which can be incredibly time-consuming. See [The Problems with @MockBean](https://www.baeldung.com/spring-tests#2-the-problems-withmockbean)
+@MockBean and @SpyBean solved this issue by providing Mockito injection directly in the Spring Context but introduced an undesirable side-effect: their usage dirties the context and may lead to the re-creation of new Spring contexts for any unique combination, which can be incredibly time-consuming. See [The Problems with @MockBean](https://www.baeldung.com/spring-tests#2-the-problems-withmockbean)
 
 ### The solution:
 
@@ -76,8 +76,8 @@ Before each test:
   - `MyServiceTest.expensiveProcessor` will be created as a spy of the bean `expensiveProcessor` and injected in the target of @SpyInBean: `MyService`.
   
 After the tests of `MyServiceTest` are done:
-  - `MyService.thirdPartyService` will be reset to the original spring bean `thirdPartyService`
-  - `MyService.expensiveProcessor` will be reset to the original spring bean `expensiveProcessor`
+  - `MyService.thirdPartyService` will be reset to the original Spring bean `thirdPartyService`
+  - `MyService.expensiveProcessor` will be reset to the original Spring bean `expensiveProcessor`
 
 # Usage:
 
@@ -86,14 +86,19 @@ Simply include the maven dependency (from central maven) to start using @MockInB
 <dependency>
   <groupId>com.teketik</groupId>
   <artifactId>mock-in-bean</artifactId>
-  <version>boot2-v1.0</version>
+  <version>boot2-v1.1</version>
   <scope>test</scope>
 </dependency>
 ```
 
 @MockInBean and @SpyInBean also support:
-  - Injection in multiple spring beans: *Repeat the annotation on your field*.
-  - Replacement of beans with different names: *Specify a `name` in your annotation*.
+  - Injection in multiple Spring beans: *Repeat the annotation on your field*.
+  - Injection in bean identified by name if multiple instances exist in the context: *Specify a `name` in your annotation*.
   
 Checkout the javadoc for more information.
 
+# Limitations:
+
+This approach has some limitations compared to the @MockBean/@SpyBean equivalent:
+  - There is currently no isolation per thread. It is not advised to use this library in parallel test suites. (Might be supported at some point, let me know if you need that feature).
+  - Operations on beans happening within another bean's constructor will not be performed against the mocks since the mocks are injected directly into the fields. Do not use @MockInBean/@SpyInBean for beans that are manipulated in constructors.

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.teketik</groupId>
     <artifactId>mock-in-bean</artifactId>
-    <version>boot2-v1.1-SNAPSHOT</version>
+    <version>boot2-v1.2</version>
     <name>Mock in Bean</name>
     <description>Surgically Inject Mockito Mock/Spy in Spring Beans</description>
     <url>https://github.com/antoinemeyer/mock-in-bean</url>
@@ -55,6 +55,11 @@
         </dependency>
 
         <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

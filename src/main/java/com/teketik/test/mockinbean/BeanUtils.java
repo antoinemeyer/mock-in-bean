@@ -1,5 +1,7 @@
 package com.teketik.test.mockinbean;
 
+import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -26,14 +28,15 @@ abstract class BeanUtils {
     static <T> T findBean(Class<T> type, @Nullable String name, ApplicationContext applicationContext) {
         final Map<String, T> beansOfType = applicationContext.getBeansOfType(type);
         Assert.isTrue(!beansOfType.isEmpty(), () -> "No beans of type " + type);
+        final T beanOrProxy;
         if (beansOfType.size() == 1) {
-            return beansOfType
+            beanOrProxy = beansOfType
                 .values()
                 .iterator()
                 .next();
         } else {
             Assert.notNull(name, () -> "Multiple beans of type " + type + ". A name must be provided");
-            return beansOfType
+            beanOrProxy = beansOfType
                 .entrySet()
                 .stream()
                 .filter(e -> e.getKey().equalsIgnoreCase(name))
@@ -41,6 +44,9 @@ abstract class BeanUtils {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No beans of type " + type + " and name " + name));
         }
+        return AopUtils.isAopProxy(beanOrProxy) 
+            ? (T) AopProxyUtils.getSingletonTarget(beanOrProxy) 
+            : beanOrProxy;
     }
 
     /**

@@ -9,6 +9,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,7 +42,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
         final LinkedList<FieldState> originalValues = new LinkedList<>();
         for (Entry<Definition, List<InBeanDefinition>> definitionToInbeans : parser.getDefinitions().entrySet()) {
             final Definition definition = definitionToInbeans.getKey();
-            final Class<?> mockOrSpyType = (Class<?>) definition.getResolvableType().getType();
+            final Class<?> mockOrSpyType = extractClass(definition);
             Field beanField = null;
             for (InBeanDefinition inBeanDefinition : definitionToInbeans.getValue()) {
                 beanField = BeanUtils.findField(inBeanDefinition.clazz, definition.getName(), mockOrSpyType);
@@ -114,4 +116,11 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
         super.afterTestClass(testContext);
     }
 
+    private Class<?> extractClass(Definition definition) {
+        Type type = definition.getResolvableType().getType();
+        if (type instanceof ParameterizedType) {
+            type = ((ParameterizedType) type).getRawType();
+        }
+        return (Class<?>) type;
+    }
 }

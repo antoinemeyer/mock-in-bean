@@ -2,7 +2,11 @@ package com.teketik.test.mockinbean;
 
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.TestContext;
+import org.springframework.test.context.TestContextManager;
 import org.springframework.test.context.TestExecutionListener;
 import org.springframework.test.context.support.AbstractTestExecutionListener;
 import org.springframework.util.Assert;
@@ -38,6 +42,13 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
     public void beforeTestClass(TestContext testContext) throws Exception {
         final InBeanDefinitionsParser parser = new InBeanDefinitionsParser();
         parser.parse(testContext.getTestClass());
+        ApplicationContext applicationContext = testContext.getApplicationContext();
+        synchronized (applicationContext) {
+            if (applicationContext.getBeansOfType(ProxyManager.class).isEmpty()) {
+                ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
+                beanFactory.registerSingleton("proxyManager", new ProxyManager());
+            }
+        }
         final Set<Field> visitedFields = new HashSet<>();
         final LinkedList<FieldState> originalValues = new LinkedList<>();
         for (Entry<Definition, List<InBeanDefinition>> definitionToInbeans : parser.getDefinitions().entrySet()) {
@@ -47,7 +58,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
             for (InBeanDefinition inBeanDefinition : definitionToInbeans.getValue()) {
                 beanField = BeanUtils.findField(inBeanDefinition.clazz, definition.getName(), mockOrSpyType);
                 beanField.setAccessible(true);
-                final Object inBean = BeanUtils.findBean(inBeanDefinition.clazz, inBeanDefinition.name, testContext.getApplicationContext());
+                final Object inBean = BeanUtils.findBean(inBeanDefinition.clazz, inBeanDefinition.name, applicationContext);
                 originalValues.add(
                     new BeanFieldState(
                         inBean,
@@ -81,18 +92,23 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
      */
     @Override
     public void beforeTestMethod(TestContext testContext) throws Exception {
+        final ProxyManager proxyManager = testContext.getApplicationContext().getBean(ProxyManager.class);
         final Map<Definition, Object> mockOrSpys = new HashMap<>();
         ((LinkedList<FieldState>) testContext.getAttribute(ORIGINAL_VALUES_ATTRIBUTE_NAME))
             .forEach(fieldState -> {
-                Object mockOrSpy = mockOrSpys.get(fieldState.definition);
-                if (mockOrSpy == null) {
-                    mockOrSpy = fieldState.definition.create(fieldState.originalValue);
-                    mockOrSpys.put(fieldState.definition, mockOrSpy);
+                Object mockOrSpyProxy = mockOrSpys.get(fieldState.definition);
+                if (mockOrSpyProxy == null) {
+                    
+                    
+                    Object unproxiedMockOrSpy = fieldState.definition.create(fieldState.originalValue);
+                    mockOrSpyProxy = proxyManager.getOrCreateProxy(unproxiedMockOrSpy, fieldState.definition);
+                    
+                    mockOrSpys.put(fieldState.definition, mockOrSpyProxy);
                 }
                 ReflectionUtils.setField(
                     fieldState.field,
                     fieldState.resolveTarget(testContext),
-                    mockOrSpy
+                    mockOrSpyProxy
                 );
             });
         super.beforeTestMethod(testContext);

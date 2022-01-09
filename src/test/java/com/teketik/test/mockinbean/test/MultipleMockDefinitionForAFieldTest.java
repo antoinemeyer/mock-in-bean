@@ -22,11 +22,6 @@ class MultipleMockDefinitionForAFieldTest extends BaseTest {
     static class TestExecutionListener extends MockInBeanTestExecutionListenerBridge {
 
         @Override
-        public void afterTestMethod(TestContext testContext) throws Exception {
-            // empty
-        }
-
-        @Override
         public void beforeTestMethod(TestContext testContext) throws Exception {
             try {
                 super.beforeTestMethod(testContext);
@@ -37,6 +32,11 @@ class MultipleMockDefinitionForAFieldTest extends BaseTest {
                     e.getMessage()
                 );
             }
+        }
+
+        @Override
+        public void afterTestMethod(TestContext testContext) throws Exception {
+            // empty
         }
 
         @Override

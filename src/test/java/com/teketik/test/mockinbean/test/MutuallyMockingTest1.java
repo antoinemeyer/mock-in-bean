@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Resource;
@@ -20,12 +19,11 @@ public class MutuallyMockingTest1 extends MutuallyMockingBaseTest {
 
     @Resource
     private TestComponentWith1 testComponentWith1;
-    
+
     @Test
     public void test() throws InterruptedException {
         //wait for all threads to be there to do the same thing together
-        COUNTDOWNLATCH.countDown();
-        Assertions.assertTrue(COUNTDOWNLATCH.await(2, TimeUnit.SECONDS));
+        SYNCHRONIZER.await();
         final AtomicBoolean called = new AtomicBoolean();
         Mockito.doAnswer(a -> {
             called.set(true);

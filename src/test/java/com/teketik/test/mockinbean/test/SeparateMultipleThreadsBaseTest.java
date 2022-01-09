@@ -5,12 +5,10 @@ import com.teketik.test.mockinbean.test.components.InterceptedComponent;
 import com.teketik.test.mockinbean.test.components.MockableComponent1;
 
 import org.junit.Assert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,13 +23,13 @@ abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
     @Resource
     private InterceptedComponent interceptedComponent;
 
-    final static CountDownLatch COUNTDOWNLATCH = new CountDownLatch(2);
+    final static ConcurrentTestWaiter BEFORE_TEST_WAITER = new ConcurrentTestWaiter(2);
+    final static ConcurrentTestWaiter AFTER_TEST_WAITER = new ConcurrentTestWaiter(2);
 
     @Test
     public void test() throws Exception {
         //wait for all threads to be there to do the same thing together
-        COUNTDOWNLATCH.countDown();
-        Assertions.assertTrue(COUNTDOWNLATCH.await(2, TimeUnit.SECONDS));
+        BEFORE_TEST_WAITER.await();
 
         /*
          * assert that the operation cannot be processed:
@@ -48,7 +46,10 @@ abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
             final Throwable undeclaredThrowable = ((UndeclaredThrowableException) e.getCause()).getUndeclaredThrowable();
             final Throwable targetException = ((InvocationTargetException) undeclaredThrowable).getTargetException();
             Assert.assertEquals(UnsupportedOperationException.class, targetException.getClass());
+        } finally {
+            AFTER_TEST_WAITER.await(); //We do not want to finish too early and cleanup the proxy before the other thread has processed the assertions!
         }
+
     }
 
 

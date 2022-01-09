@@ -13,7 +13,6 @@ import org.springframework.test.context.TestExecutionListeners;
 
 import javax.annotation.Resource;
 
-//this test fucks it asll
 @TestExecutionListeners(
         value = { MultipleMockDefinitionForAFieldTest.TestExecutionListener.class },
         inheritListeners = false

@@ -2,7 +2,9 @@ package com.teketik.test.mockinbean;
 
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
@@ -10,8 +12,10 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Supplier;
 
-abstract class BeanUtils {
+public abstract class BeanUtils {
 
     private BeanUtils() {
     }
@@ -25,7 +29,7 @@ abstract class BeanUtils {
      * @param applicationContext
      * @return the bean, if found
      */
-    static <T> T findBean(Class<T> type, @Nullable String name, ApplicationContext applicationContext) {
+    public static <T> T findBean(Class<T> type, @Nullable String name, ApplicationContext applicationContext) {
         final Map<String, T> beansOfType = applicationContext.getBeansOfType(type);
         Assert.isTrue(!beansOfType.isEmpty(), () -> "No beans of type " + type);
         final T beanOrProxy;
@@ -44,8 +48,8 @@ abstract class BeanUtils {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No beans of type " + type + " and name " + name));
         }
-        return AopUtils.isAopProxy(beanOrProxy) 
-            ? (T) AopProxyUtils.getSingletonTarget(beanOrProxy) 
+        return AopUtils.isAopProxy(beanOrProxy)
+            ? (T) AopProxyUtils.getSingletonTarget(beanOrProxy)
             : beanOrProxy;
     }
 
@@ -58,7 +62,7 @@ abstract class BeanUtils {
      * @param type
      * @return the field, if found.
      */
-    static Field findField(Class<?> clazz, @Nullable String name, Class<?> type) {
+    public static Field findField(Class<?> clazz, @Nullable String name, Class<?> type) {
         final Object[] results = new Object[2]; //name+type as 0, type only as [1]
         ReflectionUtils.doWithFields(clazz, field -> {
             if (name != null && field.getName().equalsIgnoreCase(name)) {
@@ -94,6 +98,43 @@ abstract class BeanUtils {
             return (Field) results[1];
         }
         return null;
+    }
+
+    /**
+     * Adds a bean named {@code beanName} to {@code applicationContext} as supplied by {@code supplier} if it does not yet exist.
+     * @param <T>
+     * @param beanName
+     * @param supplier
+     * @param applicationContext
+     * @return the bean (from context, or as supplied).
+     */
+    public static <T> T addToContextIfMissing(String beanName, Supplier<T> supplier, ApplicationContext applicationContext) {
+        final T object;
+        synchronized (applicationContext) {
+            if (applicationContext.containsBean(beanName)) {
+                object = (T) applicationContext.getBean(beanName);
+            } else {
+                ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
+                object = supplier.get();
+                beanFactory.registerSingleton(beanName, object);
+            }
+        }
+        return object;
+    }
+
+    /**
+     * @param beanCandidate
+     * @param applicationContext
+     * @return the name of the bean if that bean exists in given context
+     */
+    public static Optional<String> findBeanName(final Object beanCandidate, ApplicationContext applicationContext) {
+        final Map<String, ? extends Object> beansForType = applicationContext.getBeansOfType(beanCandidate.getClass());
+        for (Entry<String, ? extends Object> beanOfType : beansForType.entrySet()) {
+             if (beanOfType.getValue() == beanCandidate) {
+                 return Optional.of(beanOfType.getKey());
+             }
+        }
+        return Optional.empty();
     }
 
 }

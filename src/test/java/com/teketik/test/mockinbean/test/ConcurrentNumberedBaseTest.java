@@ -8,11 +8,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Resource;
 
-class ProxyTest extends BaseTest {
+public abstract class ConcurrentNumberedBaseTest extends ConcurrentBaseTest {
 
     @MockInBean(InterceptedComponent.class)
     private MockableComponent1 mockableComponent1;
@@ -20,8 +22,13 @@ class ProxyTest extends BaseTest {
     @Resource
     private InterceptedComponent interceptedComponent;
 
+    final static CountDownLatch COUNTDOWNLATCH = new CountDownLatch(6);
+
     @Test
-    public void test() {
+    public void test() throws InterruptedException {
+        //wait for all threads to be there to do the same thing together
+        COUNTDOWNLATCH.countDown();
+        Assertions.assertTrue(COUNTDOWNLATCH.await(2, TimeUnit.SECONDS));
         final AtomicBoolean called = new AtomicBoolean();
         Mockito.doAnswer(a -> {
             called.set(true);
@@ -29,6 +36,8 @@ class ProxyTest extends BaseTest {
         }).when(mockableComponent1).doSomething();
         interceptedComponent.process();
         Assertions.assertTrue(called.get());
+        Mockito.verify(mockableComponent1).doSomething();
+
     }
 
 }

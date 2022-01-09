@@ -13,6 +13,7 @@ import org.springframework.test.context.TestExecutionListeners;
 
 import javax.annotation.Resource;
 
+//this test fucks it asll
 @TestExecutionListeners(
         value = { MultipleMockDefinitionForAFieldTest.TestExecutionListener.class },
         inheritListeners = false
@@ -22,9 +23,14 @@ class MultipleMockDefinitionForAFieldTest extends BaseTest {
     static class TestExecutionListener extends MockInBeanTestExecutionListenerBridge {
 
         @Override
-        public void beforeTestClass(TestContext testContext) throws Exception {
+        public void afterTestMethod(TestContext testContext) throws Exception {
+            // empty
+        }
+
+        @Override
+        public void beforeTestMethod(TestContext testContext) throws Exception {
             try {
-                super.beforeTestClass(testContext);
+                super.beforeTestMethod(testContext);
                 Assertions.fail();
             } catch (IllegalArgumentException e) {
                 Assertions.assertEquals(
@@ -32,11 +38,6 @@ class MultipleMockDefinitionForAFieldTest extends BaseTest {
                     e.getMessage()
                 );
             }
-        }
-
-        @Override
-        public void beforeTestMethod(TestContext testContext) throws Exception {
-            // empty
         }
 
         @Override

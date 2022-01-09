@@ -1,0 +1,3 @@
+org.springframework.test.context.TestExecutionListener = \
+    com.teketik.test.mockinbean.ProxyManagerTestUtils
+

@@ -1,3 +1,4 @@
+
 # Mock in Bean
 
 [@MockInBean](src/main/java/com/teketik/test/mockinbean/MockInBean.java) and [@SpyInBean](src/main/java/com/teketik/test/mockinbean/SpyInBean.java) are alternatives to @MockBean and @SpyBean for Spring Boot 2 tests *(>= 2.2.0)*.
@@ -12,7 +13,7 @@ They surgically replace a field value in a Spring Bean by a Mock/Spy for the dur
 
 Spring Context pollution was a fairly common problem before the introduction of @MockBean and @SpyBean. Many developers would inject mocks in beans during tests through `@InjectMock` or using manual setters and often forget to set back the original field values which would leave the Spring context polluted and cause test failures in unrelated tests.
 
-@MockBean and @SpyBean solved this issue by providing Mockito injection directly in the Spring Context but introduced an undesirable side-effect: their usage dirties the context and may lead to the re-creation of new Spring contexts for any unique combination, which can be incredibly time-consuming. See [The Problems with @MockBean](https://www.baeldung.com/spring-tests#2-the-problems-withmockbean)
+@MockBean and @SpyBean solved this issue by providing Mockito injection directly in the Spring Context but introduced an undesirable side-effect: their usage dirties the context and may lead to the re-creation of new Spring contexts for any unique combination, which can be incredibly time-consuming. (Also see [The Problems with @MockBean](https://www.baeldung.com/spring-tests#2-the-problems-withmockbean))
 
 ### The solution:
 
@@ -97,8 +98,16 @@ Simply include the maven dependency (from central maven) to start using @MockInB
   
 Checkout the javadoc for more information.
 
+# Parallel testing
+
+Parallel testing support has been added to Release Candidate version `boot2-v2.0-RC` which allows multiple parallel tests using `MockInBean`/`SpyInBean` to run against their own mock/spy instances without interference.
+The dependencies to mock in the beans are now replaced by a proxy that invokes the mock tied to the thread running the test.
+
+*Careful: When running parallel tests, you cannot mock beans that are being used on a different thread than the thread running your test. This is because parallel testing support locates the mocks to use according to the thread and there is no way to find out which mock to use if your test runs on a thread that is not the one where your mock runs.*
+
+Please create an issue if you experience any problem. 
+
 # Limitations:
 
 This approach has some limitations compared to the @MockBean/@SpyBean equivalent:
-  - There is currently no isolation per thread. It is not advised to use this library in parallel test suites. (Might be supported at some point, let me know if you need that feature).
   - Operations on beans happening within another bean's constructor will not be performed against the mocks since the mocks are injected directly into the fields. Do not use @MockInBean/@SpyInBean for beans that are manipulated in constructors.

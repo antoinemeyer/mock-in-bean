@@ -4,14 +4,16 @@ import com.teketik.test.mockinbean.MockInBean;
 import com.teketik.test.mockinbean.test.components.InterceptedComponent;
 import com.teketik.test.mockinbean.test.components.MockableComponent1;
 
-import org.junit.jupiter.api.AfterAll;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Resource;
 
@@ -24,7 +26,6 @@ abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
     private InterceptedComponent interceptedComponent;
 
     final static CountDownLatch COUNTDOWNLATCH = new CountDownLatch(2);
-    final static AtomicBoolean EXCEPTION_VERIFIER = new AtomicBoolean();
 
     @Test
     public void test() throws Exception {
@@ -40,15 +41,15 @@ abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
         try {
             Executors.newSingleThreadExecutor().submit(() -> {
                 interceptedComponent.process();
-            }).get(2, TimeUnit.HOURS);
-        } catch (Exception e) {
-            EXCEPTION_VERIFIER.set(true);
+            }).get(2, TimeUnit.SECONDS);
+            Assert.fail();
+        } catch (ExecutionException e) {
+            Assert.assertEquals(UndeclaredThrowableException.class, e.getCause().getClass());
+            final Throwable undeclaredThrowable = ((UndeclaredThrowableException) e.getCause()).getUndeclaredThrowable();
+            final Throwable targetException = ((InvocationTargetException) undeclaredThrowable).getTargetException();
+            Assert.assertEquals(UnsupportedOperationException.class, targetException.getClass());
         }
     }
 
-    @AfterAll
-    public static void afterAll() {
-        Assertions.assertTrue(EXCEPTION_VERIFIER.get());
-    }
 
 }

@@ -20,7 +20,7 @@ public abstract class ConcurrentNumberedBaseTest extends ConcurrentBaseTest {
     @Resource
     private InterceptedComponent interceptedComponent;
 
-    final static ConcurrentTestWaiter SYNCHRONIZER = new ConcurrentTestWaiter(6);
+    final static ConcurrentTestSynchronizer SYNCHRONIZER = new ConcurrentTestSynchronizer(6);
 
     @Test
     public void test() throws InterruptedException {

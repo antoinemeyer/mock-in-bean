@@ -110,7 +110,7 @@ class MockInBeanTestContextManager {
 
             private TestProcessingPayload processDefinitions(Definition definition, List<InBeanDefinition> inBeanDefinitions) {
                 final Class<?> mockOrSpyType = extractClass(definition);
-                final LinkedMultiValueMap<Field, Object> injectedBeanFields = new LinkedMultiValueMap<>();
+                final LinkedMultiValueMap<Field, Object> beanFieldsToInject = new LinkedMultiValueMap<>();
 
                 String beanNameToProxy = null;
                 NamedObject proxy = null;
@@ -131,7 +131,7 @@ class MockInBeanTestContextManager {
                         () -> "Resolved invalid target beans for definition " + definition
                     );
                     beanNameToProxy = proxy.name;
-                    injectedBeanFields.add(inBeanDefinitionField, inBean);
+                    beanFieldsToInject.add(inBeanDefinitionField, inBean);
 
                     Assert.isTrue(
                         MapUtils.getOrPut(alreadyProxiedFields, inBean, () -> new HashSet<>())
@@ -148,7 +148,7 @@ class MockInBeanTestContextManager {
 
                 return new TestProcessingPayload(
                     definition,
-                    injectedBeanFields,
+                    beanFieldsToInject,
                     testField,
                     new NamedObject(beanNameToProxy, applicationContext.getBean(beanNameToProxy))
                 );

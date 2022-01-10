@@ -3,6 +3,8 @@ package com.teketik.test.mockinbean;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.support.AbstractTestExecutionListener;
 
+import java.util.Optional;
+
 
 public class ProxyManagerTestUtils extends AbstractTestExecutionListener {
 
@@ -15,15 +17,18 @@ public class ProxyManagerTestUtils extends AbstractTestExecutionListener {
 
     /**
      * @param proxyCandidate
-     * @param object
-     * @return true if {@code proxyCandidate} is a proxy of {@code object} (as provided by
+     * @param mockOrSpy
+     * @return true if {@code proxyCandidate} is a proxy of {@code mockOrSpy} (as provided by
      *         {@link MockInBeanTracker}).
      */
     public static boolean isProxyOf(Object proxyCandidate, Object mockOrSpy) {
         final MockInBeanTracker mockInBeanTracker = MOCK_IN_BEAN_TRACKER_CONTAINER.get();
         final String beanName = mockInBeanTracker.proxyTracker.getNameByProxy(proxyCandidate);
-        final Object mockInThreadLocal = mockInBeanTracker.mockTracker.getTracked(beanName).get();
-        return mockInThreadLocal == mockOrSpy;
+        final Optional<Object> trackedMock = mockInBeanTracker.mockTracker.getTracked(beanName);
+        if (!trackedMock.isPresent()) {
+            return false;
+        }
+        return trackedMock.get() == mockOrSpy;
     }
 
 }

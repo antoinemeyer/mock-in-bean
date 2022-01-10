@@ -39,6 +39,7 @@ class MockInBeanTest extends MockInBeanBaseTest {
         Object t1m2 = ReflectionTestUtils.getField(testComponent1, "mockableComponent2");
         Assertions.assertTrue(ProxyManagerTestUtils.isProxyOf(t1m2, mockableComponent2));
         Object t2m2 = ReflectionTestUtils.getField(testComponent2, "mockableComponent2");
+        Assertions.assertFalse(ProxyManagerTestUtils.isProxyOf(t2m2, mockableComponent2));
         Assertions.assertNotSame(t1m2, t2m2);
         Assertions.assertFalse(TestUtils.isMockOrSpy(t2m2));
     }

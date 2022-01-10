@@ -2,6 +2,6 @@ package com.teketik.test.mockinbean.test;
 
 abstract class MutuallyMockingBaseTest extends ConcurrentBaseTest {
 
-    final static ConcurrentTestWaiter SYNCHRONIZER = new ConcurrentTestWaiter(2);
+    final static ConcurrentTestSynchronizer SYNCHRONIZER = new ConcurrentTestSynchronizer(2);
 
 }

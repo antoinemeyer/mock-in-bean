@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Assertions;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class ConcurrentTestWaiter {
+public class ConcurrentTestSynchronizer {
 
     private final CountDownLatch countDownLatch;
 
-    public ConcurrentTestWaiter(int count) {
+    public ConcurrentTestSynchronizer(int count) {
         this.countDownLatch = new CountDownLatch(count);
     }
 

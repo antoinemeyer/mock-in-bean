@@ -23,8 +23,8 @@ abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
     @Resource
     private InterceptedComponent interceptedComponent;
 
-    final static ConcurrentTestWaiter BEFORE_TEST_WAITER = new ConcurrentTestWaiter(2);
-    final static ConcurrentTestWaiter AFTER_TEST_WAITER = new ConcurrentTestWaiter(2);
+    final static ConcurrentTestSynchronizer BEFORE_TEST_WAITER = new ConcurrentTestSynchronizer(2);
+    final static ConcurrentTestSynchronizer AFTER_TEST_WAITER = new ConcurrentTestSynchronizer(2);
 
     @Test
     public void test() throws Exception {
@@ -49,8 +49,6 @@ abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
         } finally {
             AFTER_TEST_WAITER.await(); //We do not want to finish too early and cleanup the proxy before the other thread has processed the assertions!
         }
-
     }
-
 
 }

@@ -1,8 +1,8 @@
 package com.teketik.test.mockinbean.test;
 
-import com.teketik.test.mockinbean.BeanUtils;
 import com.teketik.test.mockinbean.MockInBeanTestExecutionListenerConfig;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
@@ -11,6 +11,7 @@ import org.springframework.test.context.TestExecutionListener;
 import org.springframework.test.util.AopTestUtils;
 import org.springframework.util.ReflectionUtils;
 
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -52,9 +53,17 @@ class AssertingCleanTestExecutionListener implements TestExecutionListener, Orde
              * if the tests are NOT running concurrently, we can ensure that the proxies are always rolled back
              * from the beans.
              */
-            final String objectInBeanName = BeanUtils.findBeanName(objectInBean, applicationContext).get();
-            Assertions.assertSame(objectInBean, applicationContext.getBean(objectInBeanName));
+            Assert.assertTrue(objectInBean + " is not a bean after the test", isAnActualBean(applicationContext, objectInBean));
         }
+    }
+
+    private boolean isAnActualBean(ApplicationContext applicationContext, Object objectInBean) {
+        for (Entry<String, ? extends Object> entry : applicationContext.getBeansOfType(objectInBean.getClass()).entrySet()) {
+            if (entry.getValue() == objectInBean) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isRunningConcurrentBuild(ApplicationContext applicationContext) {

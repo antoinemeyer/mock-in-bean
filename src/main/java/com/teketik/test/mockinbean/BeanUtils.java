@@ -12,7 +12,6 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class BeanUtils {
@@ -120,21 +119,6 @@ public abstract class BeanUtils {
             }
         }
         return object;
-    }
-
-    /**
-     * @param beanCandidate
-     * @param applicationContext
-     * @return the name of the bean if that bean exists in given context
-     */
-    public static Optional<String> findBeanName(final Object beanCandidate, ApplicationContext applicationContext) {
-        final Map<String, ? extends Object> beansForType = applicationContext.getBeansOfType(beanCandidate.getClass());
-        for (Entry<String, ? extends Object> beanOfType : beansForType.entrySet()) {
-             if (beanOfType.getValue() == beanCandidate) {
-                 return Optional.of(beanOfType.getKey());
-             }
-        }
-        return Optional.empty();
     }
 
 }

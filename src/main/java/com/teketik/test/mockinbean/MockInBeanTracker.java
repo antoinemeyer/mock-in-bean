@@ -2,10 +2,12 @@ package com.teketik.test.mockinbean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.cglib.core.DefaultNamingPolicy;
+import org.springframework.cglib.core.NamingPolicy;
+import org.springframework.cglib.core.Predicate;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.cglib.proxy.MethodProxy;
-import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -23,20 +25,20 @@ class MockInBeanTracker {
 
     static final class MockTracker {
 
-        private final Map<String, Map<Thread, Object>> beanNameToMockThreadLocal = new HashMap<>();
+        private final Map<Object, Map<Thread, Object>> beanToMockThreadLocal = new IdentityHashMap<>();
 
-        synchronized void track(String beanName, Object mockOrSpy) {
+        synchronized void track(Object bean, Object mockOrSpy) {
             MapUtils
-                .getOrPut(beanNameToMockThreadLocal, beanName, () -> new HashMap<>())
+                .getOrPut(beanToMockThreadLocal, bean, () -> new HashMap<>())
                 .put(Thread.currentThread(), mockOrSpy);
         }
 
         /**
-         * @param beanName
-         * @return true if there are no more mocks being tracked for {@code beanName}.
+         * @param bean
+         * @return true if there are no more mocks being tracked for {@code bean}.
          */
-        synchronized boolean untrack(String beanName) {
-            return Optional.ofNullable(beanNameToMockThreadLocal.get(beanName))
+        synchronized boolean untrack(Object bean) {
+            return Optional.ofNullable(beanToMockThreadLocal.get(bean))
                 .map(threadLocal -> {
                     threadLocal.remove(Thread.currentThread());
                     return threadLocal.isEmpty();
@@ -45,12 +47,12 @@ class MockInBeanTracker {
         }
 
         /**
-         * @param beanName
-         * @return the mock related to this thread if more than one mock exist,
+         * @param bean
+         * @return the mock of this {@code bean} related to this thread if more than one mock exist,
          * or that mock if there is only one, or nothing.
          */
-        synchronized Optional<Object> getTracked(String beanName) {
-            return Optional.ofNullable(beanNameToMockThreadLocal.get(beanName))
+        synchronized Optional<Object> getTracked(Object bean) {
+            return Optional.ofNullable(beanToMockThreadLocal.get(bean))
                 .flatMap(threadToMock -> {
                     if (threadToMock.size() == 1) {
                         /*
@@ -69,64 +71,68 @@ class MockInBeanTracker {
 
     static final class ProxyTracker {
 
-        private final Map<Object, String> proxyToBeanName = new IdentityHashMap<>();
+        private final Map<Object, Object> proxyToBean = new IdentityHashMap<>();
+        private final Map<Object, Object> beanToProxy = new IdentityHashMap<>();
 
-        private final Map<String, Object> beanNameToProxy = new HashMap<>();
-
-        synchronized Object getByName(String beanName) {
-            return beanNameToProxy.get(beanName);
+        synchronized Object getByBean(Object bean) {
+            return beanToProxy.get(bean);
         }
 
-        synchronized Object getByNameOrMake(String beanName, Supplier<Object> proxyMaker) {
-            return Optional.ofNullable(beanNameToProxy.get(beanName))
+        synchronized Object getByBeanOrMake(Object bean, Supplier<Object> proxyMaker) {
+            return Optional.ofNullable(beanToProxy.get(bean))
                 .orElseGet(() -> {
                     final Object proxy = proxyMaker.get();
-                    proxyToBeanName.put(proxy, beanName);
-                    beanNameToProxy.put(beanName, proxy);
+                    proxyToBean.put(proxy, bean);
+                    beanToProxy.put(bean, proxy);
                     return proxy;
                 });
         }
 
-        synchronized String getNameByProxy(Object proxy) {
-            return proxyToBeanName.get(proxy);
+        synchronized Object getBeanByProxy(Object proxy) {
+            return proxyToBean.get(proxy);
         }
+    }
+
+    private static final NamingPolicy ENHANCER_NAMING_POLICY = new DefaultNamingPolicy() {
+        @Override
+        public String getClassName(String prefix, String source, Object key, Predicate names) {
+            return super.getClassName(prefix, source + "MockInBean", key, names);
+        }
+    };
+
+    static boolean isProxy(Object o) {
+        return o.getClass().toString().contains("$$EnhancerMockInBeanByCGLIB$$");
     }
 
     private final Log logger = LogFactory.getLog(getClass());
 
     final MockTracker mockTracker = new MockTracker();
-
     final ProxyTracker proxyTracker = new ProxyTracker();
 
-    public NamedObject setupProxyIfNotExisting(Object beanOrProxy, ApplicationContext applicationContext) {
-        return BeanUtils.findBeanName(beanOrProxy, applicationContext)
-            .map(beanName -> {
-                //not a proxy yet
-                final Object proxy = proxyTracker.getByNameOrMake(beanName, () -> {
-                    logger.debug("Creating proxy of bean " + beanOrProxy + " with bean name " + beanName + " for " + applicationContext);
-                    return makeProxy(beanOrProxy, beanName);
-                });
-                return new NamedObject(beanName, proxy);
-            })
-            .orElseGet(() -> {
-                //already a proxy
-                return new NamedObject(proxyTracker.getNameByProxy(beanOrProxy), beanOrProxy);
+    public Object setupProxyIfNotExisting(Object beanOrProxy) {
+        if (isProxy(beanOrProxy)) {
+            return beanOrProxy;
+        } else {
+            return proxyTracker.getByBeanOrMake(beanOrProxy, () -> {
+                logger.debug("Creating proxy of bean " + beanOrProxy);
+                return makeProxy(beanOrProxy);
             });
+        }
     }
 
-    private Object makeProxy(final Object originalBean, String beanName) {
+    private Object makeProxy(final Object originalBean) {
         final Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(originalBean.getClass());
         enhancer.setCallback(new MethodInterceptor() {
             @Override
             public Object intercept(Object object, Method method, Object[] parameters, MethodProxy methodProxy)
                     throws Throwable {
-                final Object target = resolveInvocationTarget(originalBean, beanName);
+                final Object target = resolveInvocationTarget(originalBean);
                 return method.invoke(target, parameters);
             }
 
-            private Object resolveInvocationTarget(final Object originalBean, final String beanName) {
-                final Optional<Object> trackedMock = mockTracker.getTracked(beanName);
+            private Object resolveInvocationTarget(final Object originalBean) {
+                final Optional<Object> trackedMock = mockTracker.getTracked(originalBean);
                 if (trackedMock.isPresent()) {
                     logger.debug("Resolved mock from thread local for class " + originalBean);
                     return trackedMock.get();
@@ -136,6 +142,7 @@ class MockInBeanTracker {
                 }
             }
         });
+        enhancer.setNamingPolicy(ENHANCER_NAMING_POLICY);
         return enhancer.create();
     }
 

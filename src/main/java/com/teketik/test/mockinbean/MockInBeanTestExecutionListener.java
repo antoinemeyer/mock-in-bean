@@ -18,7 +18,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
         context
             .getTestProcessingPayloads()
             .forEach(testProcessingPayload -> {
-                final Object mockOrSpy = testProcessingPayload.definition.create(testProcessingPayload.originalBean.object);
+                final Object mockOrSpy = testProcessingPayload.definition.create(testProcessingPayload.originalBean);
                 logger.debug("Injecting mock " + mockOrSpy + " in test field " + testProcessingPayload.testField);
                 ReflectionUtils.setField(
                     testProcessingPayload.testField,

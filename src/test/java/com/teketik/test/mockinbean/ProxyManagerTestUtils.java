@@ -23,8 +23,8 @@ public class ProxyManagerTestUtils extends AbstractTestExecutionListener {
      */
     public static boolean isProxyOf(Object proxyCandidate, Object mockOrSpy) {
         final MockInBeanTracker mockInBeanTracker = MOCK_IN_BEAN_TRACKER_CONTAINER.get();
-        final String beanName = mockInBeanTracker.proxyTracker.getNameByProxy(proxyCandidate);
-        final Optional<Object> trackedMock = mockInBeanTracker.mockTracker.getTracked(beanName);
+        final Object bean = mockInBeanTracker.proxyTracker.getBeanByProxy(proxyCandidate);
+        final Optional<Object> trackedMock = mockInBeanTracker.mockTracker.getTracked(bean);
         if (!trackedMock.isPresent()) {
             return false;
         }

@@ -12,9 +12,9 @@ class TestProcessingPayload {
 
     final Field testField;
 
-    final NamedObject originalBean;
+    final Object originalBean;
 
-    public TestProcessingPayload(Definition definition, LinkedMultiValueMap<Field, Object> beansFieldsToInject, Field testField, NamedObject originalBean) {
+    public TestProcessingPayload(Definition definition, LinkedMultiValueMap<Field, Object> beansFieldsToInject, Field testField, Object originalBean) {
         super();
         this.definition = definition;
         this.beansFieldsToInject = beansFieldsToInject;

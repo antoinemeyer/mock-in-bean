@@ -50,18 +50,18 @@ class MockInBeanTestContextManager {
 
         void wireMock(TestProcessingPayload testProcessingPayload, Object mockOrSpy) {
             synchronized (applicationContext) {
-                inject(testProcessingPayload.beansFieldsToInject, tracker.proxyTracker.getByName(testProcessingPayload.originalBean.name));
-                tracker.mockTracker.track(testProcessingPayload.originalBean.name, mockOrSpy);
-                logger.debug("Tracking mock " + mockOrSpy + " for bean name " + testProcessingPayload.originalBean.name);
+                inject(testProcessingPayload.beansFieldsToInject, tracker.proxyTracker.getByBean(testProcessingPayload.originalBean));
+                tracker.mockTracker.track(testProcessingPayload.originalBean, mockOrSpy);
+                logger.debug("Tracking mock " + mockOrSpy + " for bean " + testProcessingPayload.originalBean);
             }
         }
 
         void unwireMock(TestProcessingPayload testProcessingPayload) {
             synchronized (applicationContext) {
-                logger.debug("Untracking mock for bean name " + testProcessingPayload.originalBean.name);
-                if (tracker.mockTracker.untrack(testProcessingPayload.originalBean.name)) {
-                    logger.debug("No more mocks for " + testProcessingPayload.originalBean.name + ". Rollbacking proxy");
-                    inject(testProcessingPayload.beansFieldsToInject, testProcessingPayload.originalBean.object);
+                logger.debug("Untracking mock for bean " + testProcessingPayload.originalBean);
+                if (tracker.mockTracker.untrack(testProcessingPayload.originalBean)) {
+                    logger.debug("No more mocks for " + testProcessingPayload.originalBean + ". Rollbacking proxy");
+                    inject(testProcessingPayload.beansFieldsToInject, testProcessingPayload.originalBean);
                 }
             }
         }
@@ -95,16 +95,14 @@ class MockInBeanTestContextManager {
                 final InBeanDefinitionsParser parser = new InBeanDefinitionsParser();
                 parser.parse(testContext.getTestClass());
                 this.applicationContext = testContext.getApplicationContext();
-                synchronized (applicationContext) {
-                    this.tracker = BeanUtils.addToContextIfMissing("mockInBeanTracker", () -> new MockInBeanTracker(), applicationContext);
-                    for (Entry<Definition, List<InBeanDefinition>> definitionToInbeans : parser.getDefinitions().entrySet()) {
-                        final TestProcessingPayload testProcessingPayload = processDefinitions(
-                            definitionToInbeans.getKey(),
-                            definitionToInbeans.getValue()
-                        );
-                        logger.debug("Resolved " + testProcessingPayload);
-                        this.testProcessingPayloads.add(testProcessingPayload);
-                    }
+                this.tracker = BeanUtils.addToContextIfMissing("mockInBeanTracker", () -> new MockInBeanTracker(), applicationContext);
+                for (Entry<Definition, List<InBeanDefinition>> definitionToInbeans : parser.getDefinitions().entrySet()) {
+                    final TestProcessingPayload testProcessingPayload = processDefinitions(
+                        definitionToInbeans.getKey(),
+                        definitionToInbeans.getValue()
+                    );
+                    logger.debug("Resolved " + testProcessingPayload);
+                    this.testProcessingPayloads.add(testProcessingPayload);
                 }
             }
 
@@ -112,10 +110,8 @@ class MockInBeanTestContextManager {
                 final Class<?> mockOrSpyType = extractClass(definition);
                 final LinkedMultiValueMap<Field, Object> beanFieldsToInject = new LinkedMultiValueMap<>();
 
-                String beanNameToProxy = null;
-                NamedObject proxy = null;
-
-                for (InBeanDefinition inBeanDefinition : inBeanDefinitions) {
+                Object proxy = null;
+                for (InBeanDefinition inBeanDefinition: inBeanDefinitions) {
                     final Field inBeanDefinitionField = BeanUtils.findField(inBeanDefinition.clazz, definition.getName(), mockOrSpyType);
                     Assert.notNull(inBeanDefinitionField, () -> "Cannot find bean to mock " + mockOrSpyType + " in " + inBeanDefinition.clazz);
                     inBeanDefinitionField.setAccessible(true);
@@ -125,12 +121,16 @@ class MockInBeanTestContextManager {
                         inBean
                     );
 
-                    proxy = tracker.setupProxyIfNotExisting(originalFieldValueInBean, applicationContext);
-                    Assert.isTrue(
-                        beanNameToProxy == null || beanNameToProxy.equals(proxy.name),
-                        () -> "Resolved invalid target beans for definition " + definition
-                    );
-                    beanNameToProxy = proxy.name;
+                    //ensure all those field definitions target the same bean (and end up being the same proxy)
+                    {
+                        final Object proxyForFieldValue = tracker.setupProxyIfNotExisting(originalFieldValueInBean);
+                        Assert.isTrue(
+                            proxy == null || proxy == proxyForFieldValue,
+                            () -> "Resolved invalid target beans for definition " + definition + " in " + inBeanDefinition
+                        );
+                        proxy = proxyForFieldValue;
+                    }
+
                     beanFieldsToInject.add(inBeanDefinitionField, inBean);
 
                     Assert.isTrue(
@@ -140,9 +140,6 @@ class MockInBeanTestContextManager {
                     );
                 }
 
-                Assert.notNull(beanNameToProxy, () -> "Invalid target bean name for definition " + definition);
-                Assert.notNull(proxy, () -> "Invalid proxy for definition " + definition);
-
                 final Field testField = ReflectionUtils.findField(testContext.getTestClass(), definition.getName(), mockOrSpyType);
                 testField.setAccessible(true);
 
@@ -150,7 +147,7 @@ class MockInBeanTestContextManager {
                     definition,
                     beanFieldsToInject,
                     testField,
-                    new NamedObject(beanNameToProxy, applicationContext.getBean(beanNameToProxy))
+                    tracker.proxyTracker.getBeanByProxy(proxy)
                 );
             }
 

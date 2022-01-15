@@ -64,16 +64,27 @@ class MockInBeanTestContextManager {
             }
         }
 
-        private static void inject(final LinkedMultiValueMap<Field, Object> beansFieldsToInject, Object toInject) {
+        private void inject(final LinkedMultiValueMap<Field, Object> beansFieldsToInject, Object toInject) {
             for (Entry<Field, List<Object>> fieldToBeans: beansFieldsToInject.entrySet()) {
                 for (Object bean : fieldToBeans.getValue()) {
-                    ReflectionUtils.setField(
-                        fieldToBeans.getKey(),
-                        bean,
-                        toInject
-                    );
+                    //inject in bean
+                    inject(fieldToBeans.getKey(), bean, toInject);
+                    //if the target bean has been spied on, need to push into this spy as well (to allow mock in spies)
+                    tracker.mockTracker.getTracked(bean)
+                        .ifPresent(mockOrSpy ->inject(fieldToBeans.getKey(), mockOrSpy, toInject));
                 }
             }
+        }
+
+        private void inject(Field field, Object inObject, Object toInject) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Setting " + toInject + " (" + toInject.getClass() + ") in " + field + " of " + inObject + " (" + inObject.getClass() + ")");
+            }
+            ReflectionUtils.setField(
+                field,
+                inObject,
+                toInject
+            );
         }
 
         private static class Builder {

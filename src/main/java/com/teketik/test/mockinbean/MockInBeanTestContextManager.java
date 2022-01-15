@@ -78,7 +78,7 @@ class MockInBeanTestContextManager {
 
         private void inject(Field field, Object inObject, Object toInject) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Setting " + toInject + " (" + toInject.getClass() + ") in " + field + " of " + inObject + " (" + inObject.getClass() + ")");
+                logger.debug("Setting " + toInject.getClass() + " in " + field + " of " + inObject.getClass());
             }
             ReflectionUtils.setField(
                 field,

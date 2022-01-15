@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Resource;
 
-public class MutuallyMockingTest1 extends MutuallyMockingBaseTest {
+public class MutuallyMocking1Test extends MutuallyMockingBaseTest {
 
     @SpyInBean(TestComponentWith1.class)
     private TestComponentWith2 testComponentWith2;

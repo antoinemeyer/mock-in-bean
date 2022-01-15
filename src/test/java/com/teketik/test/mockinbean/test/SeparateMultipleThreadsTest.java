@@ -4,7 +4,7 @@ import com.teketik.test.mockinbean.MockInBean;
 import com.teketik.test.mockinbean.test.components.InterceptedComponent;
 import com.teketik.test.mockinbean.test.components.MockableComponent1;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -49,12 +49,12 @@ class SeparateMultipleThreadsTest extends ConcurrentBaseTest {
             Executors.newSingleThreadExecutor().submit(() -> {
                 interceptedComponent.process();
             }).get(2, TimeUnit.SECONDS);
-            Assert.fail();
+            Assertions.fail();
         } catch (ExecutionException e) {
-            Assert.assertEquals(UndeclaredThrowableException.class, e.getCause().getClass());
+            Assertions.assertEquals(UndeclaredThrowableException.class, e.getCause().getClass());
             final Throwable undeclaredThrowable = ((UndeclaredThrowableException) e.getCause()).getUndeclaredThrowable();
             final Throwable targetException = ((InvocationTargetException) undeclaredThrowable).getTargetException();
-            Assert.assertEquals(UnsupportedOperationException.class, targetException.getClass());
+            Assertions.assertEquals(UnsupportedOperationException.class, targetException.getClass());
         } finally {
             AFTER_TEST_WAITER.await(); //We do not want to finish too early and cleanup the proxy before the other thread has processed the assertions!
         }

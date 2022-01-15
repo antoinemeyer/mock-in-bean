@@ -2,7 +2,6 @@ package com.teketik.test.mockinbean.test;
 
 import com.teketik.test.mockinbean.MockInBeanTestExecutionListenerConfig;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
@@ -53,7 +52,7 @@ class AssertingCleanTestExecutionListener implements TestExecutionListener, Orde
              * if the tests are NOT running concurrently, we can ensure that the proxies are always rolled back
              * from the beans.
              */
-            Assert.assertTrue(objectInBean + " is not a bean after the test", isAnActualBean(applicationContext, objectInBean));
+            Assertions.assertTrue(isAnActualBean(applicationContext, objectInBean), objectInBean + " is not a bean after the test");
         }
     }
 

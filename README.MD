@@ -105,9 +105,6 @@ The dependencies to mock in the beans are now replaced by a proxy that invokes t
 
 *Careful: When running parallel tests, you cannot mock beans that are being used on a different thread than the thread running your test. This is because parallel testing support locates the mocks to use according to the thread and there is no way to find out which mock to use if your test runs on a thread that is not the one where your mock runs.*
 
-Please create an issue if you experience any problem. 
-
 # Limitations:
 
-This approach has some limitations compared to the @MockBean/@SpyBean equivalent:
-  - Operations on beans happening within another bean's constructor will not be performed against the mocks since the mocks are injected directly into the fields. Do not use @MockInBean/@SpyInBean for beans that are manipulated in constructors.
+Operations on beans happening within another bean's constructor will not be performed against the mocks since the mocks are injected directly into the fields. Do not use @MockInBean/@SpyInBean for beans that are manipulated in constructors.

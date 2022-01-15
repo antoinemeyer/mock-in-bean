@@ -35,13 +35,11 @@ class MockInBeanTestContextManager {
 
         private final Collection<TestProcessingPayload> testProcessingPayloads;
         private final MockInBeanTracker tracker;
-        private final ApplicationContext applicationContext;
 
-        private Context(Collection<TestProcessingPayload> testProcessingPayloads, MockInBeanTracker tracker, ApplicationContext applicationContext) {
+        private Context(Collection<TestProcessingPayload> testProcessingPayloads, MockInBeanTracker tracker) {
             super();
             this.testProcessingPayloads = testProcessingPayloads;
             this.tracker = tracker;
-            this.applicationContext = applicationContext;
         }
 
         Collection<TestProcessingPayload> getTestProcessingPayloads() {
@@ -49,7 +47,7 @@ class MockInBeanTestContextManager {
         }
 
         void wireMock(TestProcessingPayload testProcessingPayload, Object mockOrSpy) {
-            synchronized (applicationContext) {
+            synchronized (testProcessingPayload.originalBean) {
                 inject(testProcessingPayload.beansFieldsToInject, tracker.proxyTracker.getByBean(testProcessingPayload.originalBean));
                 tracker.mockTracker.track(testProcessingPayload.originalBean, mockOrSpy);
                 logger.debug("Tracking mock " + mockOrSpy + " for bean " + testProcessingPayload.originalBean);
@@ -57,7 +55,7 @@ class MockInBeanTestContextManager {
         }
 
         void unwireMock(TestProcessingPayload testProcessingPayload) {
-            synchronized (applicationContext) {
+            synchronized (testProcessingPayload.originalBean) {
                 logger.debug("Untracking mock for bean " + testProcessingPayload.originalBean);
                 if (tracker.mockTracker.untrack(testProcessingPayload.originalBean)) {
                     logger.debug("No more mocks for " + testProcessingPayload.originalBean + ". Rollbacking proxy");
@@ -162,8 +160,7 @@ class MockInBeanTestContextManager {
             public Context build() {
                 return new Context(
                     Collections.unmodifiableCollection(testProcessingPayloads),
-                    tracker,
-                    applicationContext
+                    tracker
                 );
             }
         }

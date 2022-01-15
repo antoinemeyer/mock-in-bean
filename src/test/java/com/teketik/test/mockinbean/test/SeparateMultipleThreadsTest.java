@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
+class SeparateMultipleThreadsTest extends ConcurrentBaseTest {
 
     @MockInBean(InterceptedComponent.class)
     private MockableComponent1 mockableComponent1;
@@ -23,10 +23,19 @@ abstract class SeparateMultipleThreadsBaseTest extends ConcurrentBaseTest {
     @Resource
     private InterceptedComponent interceptedComponent;
 
-    final static ConcurrentTestSynchronizer BEFORE_TEST_WAITER = new ConcurrentTestSynchronizer(2);
-    final static ConcurrentTestSynchronizer AFTER_TEST_WAITER = new ConcurrentTestSynchronizer(2);
+    private final static ConcurrentTestSynchronizer BEFORE_TEST_WAITER = new ConcurrentTestSynchronizer(2);
+    private final static ConcurrentTestSynchronizer AFTER_TEST_WAITER = new ConcurrentTestSynchronizer(2);
 
     @Test
+    public void test1() throws Exception {
+        test();
+    }
+
+    @Test
+    public void test2() throws Exception {
+        test();
+    }
+
     public void test() throws Exception {
         //wait for all threads to be there to do the same thing together
         BEFORE_TEST_WAITER.await();

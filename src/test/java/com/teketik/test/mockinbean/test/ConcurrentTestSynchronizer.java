@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class ConcurrentTestSynchronizer {
+class ConcurrentTestSynchronizer {
 
     private final CountDownLatch countDownLatch;
 
@@ -16,7 +16,7 @@ public class ConcurrentTestSynchronizer {
     public void await() {
         countDownLatch.countDown();
         try {
-            Assertions.assertTrue(countDownLatch.await(2, TimeUnit.SECONDS));
+            Assertions.assertTrue(countDownLatch.await(10, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

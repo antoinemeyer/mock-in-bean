@@ -20,9 +20,9 @@ abstract class MockInBeanBaseTest extends BaseTest {
 
     static class TestExecutionListener extends AbstractTestExecutionListener {
 
-        private static MockableComponent1 mockableComponent1firstTest;
-        private static MockableComponent2 mockableComponent2firstTest;
-        private static boolean multiTestChecked;
+        private static volatile MockableComponent1 mockableComponent1firstTest;
+        private static volatile MockableComponent2 mockableComponent2firstTest;
+        private static volatile boolean multiTestChecked;
 
         @Override
         public void afterTestMethod(TestContext testContext) throws Exception {

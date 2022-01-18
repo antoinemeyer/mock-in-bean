@@ -8,11 +8,14 @@ import com.teketik.test.mockinbean.test.components.MockableComponent2;
 import com.teketik.test.mockinbean.test.components.TestComponent1;
 import com.teketik.test.mockinbean.test.components.TestComponent2;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class MockInBeanTest extends MockInBeanBaseTest {
+
+    private static final MockRecreationVerifier mockRecreationVerifier = new MockRecreationVerifier();
 
     @MockInBeans({
         @MockInBean(TestComponent1.class),
@@ -42,6 +45,8 @@ class MockInBeanTest extends MockInBeanBaseTest {
         Assertions.assertFalse(ProxyManagerTestUtils.isProxyOf(t2m2, mockableComponent2));
         Assertions.assertNotSame(t1m2, t2m2);
         Assertions.assertFalse(TestUtils.isMockOrSpy(t2m2));
+
+        verifyMocksChanged();
     }
 
     @Override
@@ -54,4 +59,13 @@ class MockInBeanTest extends MockInBeanBaseTest {
         return mockableComponent2;
     }
 
+    @Override
+    MockRecreationVerifier getMockRecreationVerifier() {
+        return mockRecreationVerifier;
+    }
+
+    @AfterAll
+    public static void ensureVerified() {
+        Assertions.assertTrue(mockRecreationVerifier.isVerified());
+    }
 }

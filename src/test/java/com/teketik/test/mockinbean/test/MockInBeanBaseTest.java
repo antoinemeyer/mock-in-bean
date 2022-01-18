@@ -8,38 +8,28 @@ import com.teketik.test.mockinbean.test.components.TestComponent2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestContext;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.support.AbstractTestExecutionListener;
 
 
-@TestExecutionListeners(
-        value = { MockInBeanBaseTest.TestExecutionListener.class }
-)
 abstract class MockInBeanBaseTest extends BaseTest {
 
-    static class TestExecutionListener extends AbstractTestExecutionListener {
-
-        private static volatile MockableComponent1 mockableComponent1firstTest;
-        private static volatile MockableComponent2 mockableComponent2firstTest;
-        private static volatile boolean multiTestChecked;
-
-        @Override
-        public void afterTestMethod(TestContext testContext) throws Exception {
-            final MockInBeanBaseTest baseTest = (MockInBeanBaseTest) testContext.getTestInstance();
+    static class MockRecreationVerifier {
+        private volatile MockableComponent1 mockableComponent1firstTest;
+        private volatile MockableComponent2 mockableComponent2firstTest;
+        private volatile boolean verified;
+        private synchronized void verify(MockableComponent1 mockableComponent1, MockableComponent2 mockableComponent2) {
             if (mockableComponent1firstTest == null && mockableComponent2firstTest == null) {
-                mockableComponent1firstTest = baseTest.getMockableComponent1();
-                mockableComponent2firstTest = baseTest.getMockableComponent2();
+                Assertions.assertNotNull(mockableComponent1);
+                Assertions.assertNotNull(mockableComponent2);
+                mockableComponent1firstTest = mockableComponent1;
+                mockableComponent2firstTest = mockableComponent2;
             } else {
-                Assertions.assertNotSame(baseTest.getMockableComponent1(), mockableComponent1firstTest);
-                Assertions.assertNotSame(baseTest.getMockableComponent2(), mockableComponent2firstTest);
-                multiTestChecked = true;
+                Assertions.assertNotSame(mockableComponent1, mockableComponent1firstTest);
+                Assertions.assertNotSame(mockableComponent2, mockableComponent2firstTest);
+                verified = true;
             }
         }
-
-        @Override
-        public void afterTestClass(TestContext testContext) throws Exception {
-            Assertions.assertTrue(multiTestChecked);
+        boolean isVerified() {
+            return verified;
         }
     }
 
@@ -49,12 +39,20 @@ abstract class MockInBeanBaseTest extends BaseTest {
     @Autowired
     protected TestComponent2 testComponent2;
 
+
     @Test
     public void emptyTestForMockRecreationVerification() {
+        verifyMocksChanged();
     }
 
     abstract MockableComponent1 getMockableComponent1();
 
     abstract MockableComponent2 getMockableComponent2();
+
+    abstract MockRecreationVerifier getMockRecreationVerifier();
+
+    void verifyMocksChanged() {
+        getMockRecreationVerifier().verify(getMockableComponent1(), getMockableComponent2());
+    }
 
 }

@@ -6,7 +6,10 @@ import com.teketik.test.mockinbean.test.components.TestComponent1;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Resource;
 
@@ -21,7 +24,14 @@ class ComponentWithDifferentNameTest extends BaseTest {
     @Test
     public void test() {
         Assertions.assertTrue(TestUtils.isMock(differentName));
-        Assertions.assertSame(differentName, ReflectionTestUtils.getField(testComponent1, "mockableComponent1"));
+        AtomicBoolean ab = new AtomicBoolean();
+        Mockito.doAnswer(a -> {
+            ab.getAndSet(true);
+            return true;
+        }).when(differentName).doSomething();
+        MockableComponent1 mockableComponent1 = (MockableComponent1) ReflectionTestUtils.getField(testComponent1, "mockableComponent1");
+        mockableComponent1.doSomething();
+        Assertions.assertTrue(ab.get());
     }
 
 }

@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 public class TestComponentWithMultipleSameType {
 
     @Autowired
-    private MockableComponent1 mockableComponent1a;
+    private MockableComponent2 mockableComponentExtending2;
 
     @Autowired
-    private MockableComponent1 mockableComponent1b;
+    private MockableComponent2 mockableComponent2;
 
 }

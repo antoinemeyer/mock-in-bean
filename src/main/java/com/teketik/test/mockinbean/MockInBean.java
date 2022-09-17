@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 /**
  * <p>Annotation used to inject a mockito {@link Mock} in a Spring Bean for the duration of a test.
  * <p>This is a convenient alternative to {@link MockBean @MockBean} that provides surgical mock injection without dirtying or polluting the Spring context:<br>
- * Mocks are injected for every test method and the original Spring Beans(s) are re-injected after the test class is done.
+ * Mocks are injected for every test method and the original Spring Beans(s) are re-injected after the test is done.
  * <hr>
  * <p><strong>Example:</strong><br>
  * Assuming you have the following service:<br>
@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * {@code thirdPartyApi} will be a {@link Mock} that is recreated for every test method in {@code MyServiceTest} and {@code MyService}.<br>
- * The original {@code ThirdPartyApi} Spring bean will be re-injected in {@code MyService} after all the tests of {@code MyServiceTest}.
+ * The original {@code ThirdPartyApi} Spring bean will be re-injected in {@code MyService} after the test.
  * <hr>
  * <p>In case the bean in which you are trying to inject a mock has multiple instances registered in the context, you can specify the {@link #name() name} of the bean:
  * <pre class="code">

@@ -1,6 +1,7 @@
 package com.teketik.test.mockinbean.test;
 
 import com.teketik.test.mockinbean.MockInBean;
+import com.teketik.test.mockinbean.ProxyManagerTestUtils;
 import com.teketik.test.mockinbean.test.components.TestComponent1;
 import com.teketik.test.mockinbean.test.components.TestComponentInterface;
 
@@ -20,7 +21,8 @@ public class TestInterface extends BaseTest {
     @Test
     public void test() {
         Assertions.assertTrue(TestUtils.isMock(testComponent1));
-        Assertions.assertSame(testComponent1, ReflectionTestUtils.getField(testComponentInterface, "testComponent1"));
+        Object t1m1 = ReflectionTestUtils.getField(testComponentInterface, "testComponent1");
+        Assertions.assertTrue(ProxyManagerTestUtils.isProxyOf(t1m1, testComponent1));
     }
 
 }

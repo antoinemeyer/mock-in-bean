@@ -19,4 +19,9 @@ class InBeanDefinition {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return "InBeanDefinition [clazz=" + clazz + ", name=" + name + "]";
+    }
+
 }

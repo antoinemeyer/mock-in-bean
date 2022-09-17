@@ -23,7 +23,7 @@ public class MyServiceTest {
     @Test
     public void test() {
         final Object somethingExpensive = new Object();
-        Mockito.when(expensiveProcessor.returnSomethingExpensive()).thenReturn(somethingExpensive);
+        Mockito.doReturn(somethingExpensive).when(expensiveProcessor).returnSomethingExpensive();
         myService.doSomething();
         Mockito.verify(thirdPartyApiService).doSomethingOnThirdPartyApi(somethingExpensive);
     }

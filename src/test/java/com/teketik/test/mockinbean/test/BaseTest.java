@@ -1,5 +1,7 @@
 package com.teketik.test.mockinbean.test;
 
+import org.junit.jupiter.api.AfterEach;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.TestExecutionListeners.MergeMode;
@@ -10,5 +12,10 @@ import org.springframework.test.context.TestExecutionListeners.MergeMode;
 )
 @SpringBootTest
 abstract class BaseTest {
+
+    @AfterEach
+    public void validateMocks() {
+        Mockito.validateMockitoUsage();
+    }
 
 }

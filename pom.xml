@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.teketik</groupId>
     <artifactId>mock-in-bean</artifactId>
-    <version>boot2-v1.4</version>
+    <version>boot2-v2.1-RC</version>
     <name>Mock in Bean</name>
     <description>Surgically Inject Mockito Mock/Spy in Spring Beans</description>
     <url>https://github.com/antoinemeyer/mock-in-bean</url>
@@ -14,6 +14,15 @@
         <connection>scm:git:git://github.com/antoinemeyer/mock-in-bean.git</connection>
         <developerConnection>scm:git:git@github.com:antoinemeyer/mock-in-bean.git</developerConnection>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <uniqueVersion>false</uniqueVersion>
+            <url>https://github.com/antoinemeyer/mock-in-bean</url>
+            <layout>default</layout>
+        </repository>
+    </distributionManagement>
 
     <licenses>
         <license>
@@ -53,7 +62,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
         </dependency>
-
+                
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -116,6 +125,88 @@
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.7.201606060606</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.95</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>sequential</id>
+                        <phase>test</phase>
+                        <configuration>
+                            <skip>false</skip>
+                            <excludedGroups>concurrent</excludedGroups>
+                        </configuration>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>concurrent</id>
+                        <phase>test</phase>
+                        <configuration>
+                            <skip>false</skip>
+                            <excludedGroups>sequential</excludedGroups>
+                            <environmentVariables>
+                                <concurrent>true</concurrent>
+                            </environmentVariables>
+                            <properties>
+                                <configurationParameters>
+                                    junit.jupiter.execution.parallel.enabled=true
+                                    junit.jupiter.execution.parallel.mode.default=concurrent
+                                    junit.jupiter.execution.parallel.mode.classes.default=concurrent
+                                    junit.jupiter.execution.parallel.config.strategy=fixed
+                                    junit.jupiter.execution.parallel.config.fixed.parallelism=10
+                                </configurationParameters>
+                            </properties>
+                        </configuration>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

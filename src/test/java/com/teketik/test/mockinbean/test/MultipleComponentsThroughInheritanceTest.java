@@ -2,6 +2,7 @@ package com.teketik.test.mockinbean.test;
 
 import com.teketik.test.mockinbean.MockInBean;
 import com.teketik.test.mockinbean.MockInBeans;
+import com.teketik.test.mockinbean.ProxyManagerTestUtils;
 import com.teketik.test.mockinbean.test.components.MockableComponent1;
 import com.teketik.test.mockinbean.test.components.TestComponent3;
 import com.teketik.test.mockinbean.test.components.TestComponentOn3;
@@ -29,8 +30,8 @@ class MultipleComponentsThroughInheritanceTest extends BaseTest {
     @Test
     public void test() {
         Assertions.assertTrue(TestUtils.isMock(mockableComponent1));
-        Assertions.assertSame(mockableComponent1, ReflectionTestUtils.getField(testComponentOn3, "mockableComponent1"));
-        Assertions.assertSame(mockableComponent1, ReflectionTestUtils.getField(testComponent3, "mockableComponent1"));
+        Assertions.assertTrue(ProxyManagerTestUtils.isProxyOf(ReflectionTestUtils.getField(testComponentOn3, "mockableComponent1"), mockableComponent1));
+        Assertions.assertTrue(ProxyManagerTestUtils.isProxyOf(ReflectionTestUtils.getField(testComponent3, "mockableComponent1"), mockableComponent1));
         Assertions.assertFalse(TestUtils.isMockOrSpy(ReflectionTestUtils.getField(testComponentOn3, "mockableComponent2")));
         Assertions.assertFalse(TestUtils.isMockOrSpy(ReflectionTestUtils.getField(testComponent3, "mockableComponent2")));
     }

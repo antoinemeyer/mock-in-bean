@@ -1,6 +1,7 @@
 package com.teketik.test.mockinbean.test;
 
 import com.teketik.test.mockinbean.MockInBean;
+import com.teketik.test.mockinbean.ProxyManagerTestUtils;
 import com.teketik.test.mockinbean.test.components.GenericMockableComponent;
 import com.teketik.test.mockinbean.test.components.GenericTestComponent;
 
@@ -21,7 +22,8 @@ class GenericComponentTest extends BaseTest {
     @Test
     public void test() {
         Assertions.assertTrue(TestUtils.isMock(genericMockableComponent));
-        Assertions.assertSame(genericMockableComponent, ReflectionTestUtils.getField(genericTestComponent, "genericMockableComponent"));
+        Object field = ReflectionTestUtils.getField(genericTestComponent, "genericMockableComponent");
+        Assertions.assertTrue(ProxyManagerTestUtils.isProxyOf(field, genericMockableComponent));
     }
 
 }

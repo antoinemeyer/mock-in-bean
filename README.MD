@@ -86,7 +86,7 @@ Simply include the maven dependency (from central maven) to start using @MockInB
 <dependency>
   <groupId>com.teketik</groupId>
   <artifactId>mock-in-bean</artifactId>
-  <version>boot2-v1.3</version>
+  <version>boot2-v1.4</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -100,5 +100,5 @@ Checkout the javadoc for more information.
 # Limitations:
 
 This approach has some limitations compared to the @MockBean/@SpyBean equivalent:
-  - There is currently no isolation per thread. It is not advised to use this library in parallel test suites. (Might be supported at some point, let me know if you need that feature).
+  - There is currently no isolation per thread. It is not advised to use this library in parallel test suites. (Parallel test execution is supported experimentally in https://github.com/antoinemeyer/mock-in-bean/tree/v2.1-RC).
   - Operations on beans happening within another bean's constructor will not be performed against the mocks since the mocks are injected directly into the fields. Do not use @MockInBean/@SpyInBean for beans that are manipulated in constructors.

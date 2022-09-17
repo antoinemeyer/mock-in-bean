@@ -45,9 +45,9 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
             final Class<?> mockOrSpyType = extractClass(definition);
             Field beanField = null;
             for (InBeanDefinition inBeanDefinition : definitionToInbeans.getValue()) {
-                beanField = BeanUtils.findField(inBeanDefinition.clazz, definition.getName(), mockOrSpyType);
-                beanField.setAccessible(true);
                 final Object inBean = BeanUtils.findBean(inBeanDefinition.clazz, inBeanDefinition.name, testContext.getApplicationContext());
+                beanField = BeanUtils.findField(inBean.getClass(), definition.getName(), mockOrSpyType);
+                beanField.setAccessible(true);
                 originalValues.add(
                     new BeanFieldState(
                         inBean,

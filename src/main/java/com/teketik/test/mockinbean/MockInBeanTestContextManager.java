@@ -121,10 +121,10 @@ class MockInBeanTestContextManager {
 
                 Object proxy = null;
                 for (InBeanDefinition inBeanDefinition: inBeanDefinitions) {
-                    final Field inBeanDefinitionField = BeanUtils.findField(inBeanDefinition.clazz, definition.getName(), mockOrSpyType);
+                    final Object inBean = BeanUtils.findBean(inBeanDefinition.clazz, inBeanDefinition.name, applicationContext);
+                    final Field inBeanDefinitionField = BeanUtils.findField(inBean.getClass(), definition.getName(), mockOrSpyType);
                     Assert.notNull(inBeanDefinitionField, () -> "Cannot find bean to mock " + mockOrSpyType + " in " + inBeanDefinition.clazz);
                     inBeanDefinitionField.setAccessible(true);
-                    final Object inBean = BeanUtils.findBean(inBeanDefinition.clazz, inBeanDefinition.name, applicationContext);
                     final Object originalFieldValueInBean = ReflectionUtils.getField(
                         inBeanDefinitionField,
                         inBean

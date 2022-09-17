@@ -87,7 +87,7 @@ Simply include the maven dependency (from central maven) to start using @MockInB
 <dependency>
   <groupId>com.teketik</groupId>
   <artifactId>mock-in-bean</artifactId>
-  <version>boot2-v1.3</version>
+  <version>boot2-v1.4</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -100,7 +100,7 @@ Checkout the javadoc for more information.
 
 # Parallel testing
 
-Parallel testing support has been added to Release Candidate version `boot2-v2.0-RC` which allows multiple parallel tests using `MockInBean`/`SpyInBean` to run against their own mock/spy instances without interference.
+Parallel testing support has been added to Release Candidate version `boot2-v2.1-RC` which allows multiple parallel tests using `MockInBean`/`SpyInBean` to run against their own mock/spy instances without interference.
 The dependencies to mock in the beans are now replaced by a proxy that invokes the mock tied to the thread running the test.
 
 *Careful: When running parallel tests, you cannot mock beans that are being used on a different thread than the thread running your test. This is because parallel testing support locates the mocks to use according to the thread and there is no way to find out which mock to use if your test runs on a thread that is not the one where your mock runs.*

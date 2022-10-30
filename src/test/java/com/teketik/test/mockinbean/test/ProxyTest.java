@@ -4,7 +4,7 @@ import com.teketik.test.mockinbean.MockInBean;
 import com.teketik.test.mockinbean.test.components.InterceptedComponent;
 import com.teketik.test.mockinbean.test.components.MockableComponent1;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -28,7 +28,7 @@ class ProxyTest extends BaseTest {
             return null;
         }).when(mockableComponent1).doSomething();
         interceptedComponent.process();
-        Assert.assertTrue(called.get());
+        Assertions.assertTrue(called.get());
     }
 
 }

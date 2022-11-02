@@ -142,7 +142,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
 
     private Class<?> resolveTestClass(Class<?> candidate) {
         if (isNestedTestClass(candidate)) {
-            return candidate.getEnclosingClass();
+            return resolveTestClass(candidate.getEnclosingClass());
         }
         return candidate;
     }

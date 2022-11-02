@@ -39,6 +39,19 @@ class NestedTest extends BaseTest {
             Mockito.when(expensiveProcessor.returnSomethingExpensive()).thenThrow(RuntimeException.class);
             Assertions.assertThrows(RuntimeException.class, () -> myService.doSomething());
         }
+
+        @Nested
+        class NestedInner1 {
+
+            @Test
+            void resultReturnMockedValue() {
+                final Object somethingExpensive = new Object();
+                Mockito.when(expensiveProcessor.returnSomethingExpensive()).thenReturn(somethingExpensive);
+                myService.doSomething();
+                Mockito.verify(thirdPartyApiService).doSomethingOnThirdPartyApi(somethingExpensive);
+            }
+
+        }
     }
 
     @Nested

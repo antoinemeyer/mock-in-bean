@@ -93,6 +93,9 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
     public void beforeTestMethod(TestContext testContext) throws Exception {
         final TestContext applicableTestContext = ROOT_TEST_CONTEXT_TRACKER
                 .get(resolveTestClass(testContext.getTestClass()));
+        if(applicableTestContext == null) {
+            return; // required to handle nested spring integration test classes that do not have any @MockInBean declarations
+        }
         final Map<Definition, Object> mockOrSpys = new HashMap<>();
         ((LinkedList<FieldState>) applicableTestContext.getAttribute(ORIGINAL_VALUES_ATTRIBUTE_NAME))
             .forEach(fieldState -> {

@@ -148,7 +148,8 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
     }
 
     private boolean isNestedTestClass(Class<?> candidate) {
-        return AnnotationUtils.isAnnotationDeclaredLocally(Nested.class, candidate);
+        return AnnotationUtils.isAnnotationDeclaredLocally(Nested.class, candidate)
+                && candidate.getEnclosingClass() != null;
     }
 
 }

@@ -86,7 +86,7 @@ Simply include the maven dependency (from central maven) to start using @MockInB
 <dependency>
   <groupId>com.teketik</groupId>
   <artifactId>mock-in-bean</artifactId>
-  <version>boot2-v1.5.2</version>
+  <version>boot2-v1.6</version>
   <scope>test</scope>
 </dependency>
 ```

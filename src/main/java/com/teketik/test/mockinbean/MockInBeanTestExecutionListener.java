@@ -15,10 +15,12 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -94,20 +96,42 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
         final TestContext applicableTestContext = ROOT_TEST_CONTEXT_TRACKER
                 .get(resolveTestClass(testContext.getTestClass()));
         final Map<Definition, Object> mockOrSpys = new HashMap<>();
-        ((LinkedList<FieldState>) applicableTestContext.getAttribute(ORIGINAL_VALUES_ATTRIBUTE_NAME))
+        final LinkedList<FieldState> fieldStates = (LinkedList<FieldState>) applicableTestContext.getAttribute(ORIGINAL_VALUES_ATTRIBUTE_NAME);
+        final Map<Object, Object> spyTracker = new IdentityHashMap<>();
+        //First loop to setup all the mocks and spies
+        fieldStates
             .forEach(fieldState -> {
                 Object mockOrSpy = mockOrSpys.get(fieldState.definition);
                 if (mockOrSpy == null) {
                     mockOrSpy = fieldState.definition.create(fieldState.originalValue);
                     mockOrSpys.put(fieldState.definition, mockOrSpy);
+                    if (fieldState.definition instanceof SpyDefinition) {
+                        spyTracker.put(fieldState.originalValue, mockOrSpy);
+                    }
                 }
-                ReflectionUtils.setField(
-                    fieldState.field,
-                    fieldState.resolveTarget(applicableTestContext),
-                    mockOrSpy
-                );
             });
+        //Second loop to process the injections (handling mocks in spies)
+        fieldStates
+            .forEach(fieldState -> {
+                final Object mockOrSpy = mockOrSpys.get(fieldState.definition);
+                final Object bean = fieldState.resolveTarget(applicableTestContext);
+                //inject in original bean
+                inject(fieldState.field, bean, mockOrSpy);
+                //if the target bean has been spied on, need to push into this spy as well (to allow mock in spies)
+                Optional.ofNullable(spyTracker.get(bean))
+                    .ifPresent(spy ->inject(fieldState.field, spy, mockOrSpy));
+
+            });
+
         super.beforeTestMethod(testContext);
+    }
+
+    private void inject(Field field, Object inObject, Object toInject) {
+        ReflectionUtils.setField(
+            field,
+            inObject,
+            toInject
+        );
     }
 
     /*

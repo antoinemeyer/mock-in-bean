@@ -66,7 +66,7 @@ import java.lang.annotation.Target;
  * @author Antoine Meyer
  * @see SpyInBean
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(MockInBeans.class)
 public @interface MockInBean {

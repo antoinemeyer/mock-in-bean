@@ -102,7 +102,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
         final Map<Definition, Object> mockOrSpys = new HashMap<>();
         final LinkedList<FieldState> fieldStates = (LinkedList<FieldState>) applicableTestContext.getAttribute(ORIGINAL_VALUES_ATTRIBUTE_NAME);
         final Map<Object, Object> spyTracker = new IdentityHashMap<>();
-        // First loop to setup all the mocks and spies
+        //First loop to setup all the mocks and spies
         fieldStates
             .stream()
             .filter(BeanFieldState.class::isInstance)
@@ -117,14 +117,14 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
                     }
                 }
             });
-        // Second loop to process the injections (handling mocks in spies)
+        //Second loop to process the injections (handling mocks in spies)
         fieldStates
             .forEach(fieldState -> {
                 final Object mockOrSpy = mockOrSpys.get(fieldState.definition);
                 final Object bean = fieldState.resolveTarget(applicableTestContext);
-                // inject in original bean
+                //inject in original bean
                 inject(fieldState.field, bean, mockOrSpy);
-                // if the target bean has been spied on, need to push into this spy as well (to allow mock in spies)
+                //if the target bean has been spied on, need to push into this spy as well (to allow mock in spies)
                 Optional.ofNullable(spyTracker.get(bean))
                     .ifPresent(spy ->inject(fieldState.field, spy, mockOrSpy));
 

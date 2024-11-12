@@ -8,9 +8,15 @@ class BeanFieldState extends FieldState {
 
     private Object bean;
 
-    public BeanFieldState(Object bean, Field field, Object originalValue, Definition definition) {
-        super(field, originalValue, definition);
+    private Object originalValue;
+
+    private Object mockableValue;
+
+    public BeanFieldState(Object bean, Field field, Object originalValue, Object mockableValue, Definition definition) {
+        super(field, definition);
         this.bean = bean;
+        this.originalValue = originalValue;
+        this.mockableValue = mockableValue;
     }
 
     @Override
@@ -18,4 +24,11 @@ class BeanFieldState extends FieldState {
         return bean;
     }
 
+    public Object getMockableValue() {
+        return mockableValue;
+    }
+
+    public Object getOriginalValue() {
+        return originalValue;
+    }
 }

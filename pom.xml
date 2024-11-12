@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.teketik</groupId>
     <artifactId>mock-in-bean</artifactId>
-    <version>boot2-v1.7</version>
+    <version>boot2-v1.8</version>
     <name>Mock in Bean</name>
     <description>Surgically Inject Mockito Mock/Spy in Spring Beans</description>
     <url>https://github.com/antoinemeyer/mock-in-bean</url>

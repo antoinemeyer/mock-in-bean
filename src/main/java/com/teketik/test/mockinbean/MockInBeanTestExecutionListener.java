@@ -127,8 +127,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
                 //if the target bean has been spied on, need to push into this spy as well (to allow mock in spies)
                 Optional.ofNullable(spyTracker.get(bean))
                     .ifPresent(spy ->inject(fieldState.field, spy, mockOrSpy));
-
-        });
+            });
 
         super.beforeTestMethod(testContext);
     }

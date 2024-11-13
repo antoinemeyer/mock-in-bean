@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Nested;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.aop.TargetSource;
-import org.springframework.aop.framework.Advised;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
@@ -62,12 +60,18 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
             for (InBeanDefinition inBeanDefinition : definitionToInbeans.getValue()) {
                 final Object inBean = BeanUtils.findBean(inBeanDefinition.clazz, inBeanDefinition.name, testContext.getApplicationContext());
                 beanField = BeanUtils.findField(inBean.getClass(), definition.getName(), mockOrSpyType);
+                Assert.notNull(beanField, "Cannot find any field for definition:" + definitionToInbeans.getKey());
                 beanField.setAccessible(true);
                 final Object beanFieldValue = ReflectionUtils.getField(beanField, inBean);
-                originalValues.add(new BeanFieldState(inBean, beanField, beanFieldValue,
-                    determineMockableValue(beanFieldValue), definition));
+                final TargetSource proxyTarget = BeanUtils.getProxyTarget(beanFieldValue);
+                BeanFieldState beanFieldState;
+                if (proxyTarget != null) {
+                    beanFieldState = new ProxiedBeanFieldState(inBean, beanField, beanFieldValue, proxyTarget, definition);
+                } else {
+                    beanFieldState = new BeanFieldState(inBean, beanField, beanFieldValue, definition);
+                }
+                originalValues.add(beanFieldState);
             }
-            Assert.notNull(beanField, "Cannot find any field for definition:" + definitionToInbeans.getKey());
             Assert.isTrue(visitedFields.add(beanField), beanField + " can only be mapped once, as a mock or a spy, not both!");
             final Field testField = ReflectionUtils.findField(targetTestClass, definition.getName(), mockOrSpyType);
             testField.setAccessible(true);
@@ -75,21 +79,6 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
         }
         testContext.setAttribute(ORIGINAL_VALUES_ATTRIBUTE_NAME, originalValues);
         super.beforeTestClass(testContext);
-    }
-
-    private Object determineMockableValue(Object candidate) {
-        try {
-            while (candidate != null
-                    && AopUtils.isAopProxy(candidate)
-                    && candidate instanceof Advised) {
-                final Advised advised = (Advised) candidate;
-                final TargetSource targetSource = advised.getTargetSource();
-                candidate = targetSource.getTarget();
-            }
-            return candidate;
-        } catch (Exception e) {
-            throw new RuntimeException("Target cannot be resolved", e);
-        }
     }
 
     /*
@@ -110,10 +99,10 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
             .forEach(fieldState -> {
                 Object mockOrSpy = mockOrSpys.get(fieldState.definition);
                 if (mockOrSpy == null) {
-                    mockOrSpy = fieldState.definition.create(fieldState.getMockableValue());
+                    mockOrSpy = fieldState.createMockOrSpy();
                     mockOrSpys.put(fieldState.definition, mockOrSpy);
                     if (fieldState.definition instanceof SpyDefinition) {
-                        spyTracker.put(fieldState.getMockableValue(), mockOrSpy);
+                        spyTracker.put(fieldState.originalValue, mockOrSpy);
                     }
                 }
             });
@@ -152,8 +141,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
             .stream()
             .filter(BeanFieldState.class::isInstance)
             .map(BeanFieldState.class::cast)
-            .forEach(fieldValue ->
-                ReflectionUtils.setField(fieldValue.field, fieldValue.resolveTarget(testContext), fieldValue.getOriginalValue()));
+            .forEach(fieldState -> fieldState.rollback(testContext));
         ROOT_TEST_CONTEXT_TRACKER.remove(testContext.getTestClass());
         super.afterTestClass(testContext);
     }

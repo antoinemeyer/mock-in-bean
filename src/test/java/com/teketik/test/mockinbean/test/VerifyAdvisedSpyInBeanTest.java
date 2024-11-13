@@ -3,6 +3,7 @@ package com.teketik.test.mockinbean.test;
 import static org.mockito.Mockito.verify;
 
 import com.teketik.test.mockinbean.SpyInBean;
+import com.teketik.test.mockinbean.test.VerifyAdvisedSpyInBeanTest.Config.AnAspect;
 import com.teketik.test.mockinbean.test.VerifyAdvisedSpyInBeanTest.Config.LoggingService;
 import com.teketik.test.mockinbean.test.VerifyAdvisedSpyInBeanTest.Config.ProviderService;
 
@@ -22,9 +23,10 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.TestExecutionListeners.MergeMode;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * Covering test case from
- * https://github.com/inkassso/mock-in-bean-issue-23/blob/master/src/test/java/com/github/inkassso/mockinbean/issue23/service/BrokenLoggingServiceTest1_SpyInBean.java
+ * Covering test case from https://github.com/inkassso/mock-in-bean-issue-23/blob/master/src/test/java/com/github/inkassso/mockinbean/issue23/service/BrokenLoggingServiceTest1_SpyInBean.java
  */
 @TestExecutionListeners(value = {VerifyAdvisedSpyInBeanTest.class}, mergeMode = MergeMode.MERGE_WITH_DEFAULTS)
 @SpringBootTest
@@ -36,8 +38,13 @@ public class VerifyAdvisedSpyInBeanTest implements TestExecutionListener, Ordere
         @Aspect
         @Component
         public class AnAspect {
+
+            private final AtomicInteger invocationCounter = new AtomicInteger();
+
             @Before("execution(* com.teketik.test.mockinbean.test.VerifyAdvisedSpyInBeanTest.Config.ProviderService.provideValue())")
-            public void logBeforeMethodExecution() {}
+            public void run() {
+                invocationCounter.incrementAndGet();
+            }
         }
 
         @Service
@@ -74,8 +81,16 @@ public class VerifyAdvisedSpyInBeanTest implements TestExecutionListener, Ordere
     @Override
     public void afterTestClass(TestContext testContext) throws Exception {
         final ApplicationContext applicationContext = testContext.getApplicationContext();
+
+        //ensure context clean
         final Object loggingServiceBean = applicationContext.getBean(LoggingService.class);
-        Assertions.assertSame(applicationContext.getBean(ProviderService.class), ReflectionTestUtils.getField(loggingServiceBean, "providerService"));
+        final Object providerServiceInBean = ReflectionTestUtils.getField(loggingServiceBean, "providerService");
+        Assertions.assertFalse(TestUtils.isMockOrSpy(providerServiceInBean));
+        Assertions.assertSame(applicationContext.getBean(ProviderService.class), providerServiceInBean);
+
+        //ensure aspect invoked (from log and verify)
+        final AnAspect anAspect = applicationContext.getBean(AnAspect.class);
+        Assertions.assertEquals(2, anAspect.invocationCounter.get());
     }
 
     @Override

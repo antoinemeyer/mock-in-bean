@@ -1,22 +1,20 @@
 package com.teketik.test.mockinbean;
 
 import org.springframework.test.context.TestContext;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 
 class BeanFieldState extends FieldState {
 
-    private Object bean;
+    final Object bean;
 
-    private Object originalValue;
+    final Object originalValue;
 
-    private Object mockableValue;
-
-    public BeanFieldState(Object bean, Field field, Object originalValue, Object mockableValue, Definition definition) {
+    public BeanFieldState(Object bean, Field field, Object originalValue, Definition definition) {
         super(field, definition);
         this.bean = bean;
         this.originalValue = originalValue;
-        this.mockableValue = mockableValue;
     }
 
     @Override
@@ -24,11 +22,13 @@ class BeanFieldState extends FieldState {
         return bean;
     }
 
-    public Object getMockableValue() {
-        return mockableValue;
+    public void rollback(TestContext testContext) {
+        final Object target = resolveTarget(testContext);
+        ReflectionUtils.setField(field, target, originalValue);
     }
 
-    public Object getOriginalValue() {
-        return originalValue;
+    public Object createMockOrSpy() {
+        return definition.create(originalValue);
     }
+
 }

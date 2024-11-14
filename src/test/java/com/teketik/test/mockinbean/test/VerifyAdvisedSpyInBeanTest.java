@@ -11,6 +11,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -60,8 +61,8 @@ public class VerifyAdvisedSpyInBeanTest implements TestExecutionListener, Ordere
             @Autowired
             private ProviderService providerService;
 
-            public void logCurrentValue() {
-                providerService.provideValue();
+            public String logCurrentValue() {
+                return providerService.provideValue();
             }
         }
     }
@@ -69,13 +70,25 @@ public class VerifyAdvisedSpyInBeanTest implements TestExecutionListener, Ordere
     @Autowired
     protected LoggingService loggingService;
 
+    @Autowired
+    protected AnAspect anAspect;
+
     @SpyInBean(LoggingService.class)
     private ProviderService providerService;
 
     @Test
-    void testLogCurrentValue() {
+    void testAspectInvocation() {
+        int initialCounterValue = anAspect.invocationCounter.get();
         loggingService.logCurrentValue();
+        Assertions.assertEquals(initialCounterValue + 1, anAspect.invocationCounter.get());
         verify(providerService).provideValue();
+        Assertions.assertEquals(initialCounterValue + 2, anAspect.invocationCounter.get());
+    }
+
+    @Test
+    void testSpyAnswer() {
+        Mockito.doAnswer(i -> "value").when(providerService).provideValue();
+        Assertions.assertEquals("value", loggingService.logCurrentValue());
     }
 
     @Override
@@ -88,14 +101,13 @@ public class VerifyAdvisedSpyInBeanTest implements TestExecutionListener, Ordere
         Assertions.assertFalse(TestUtils.isMockOrSpy(providerServiceInBean));
         Assertions.assertSame(applicationContext.getBean(ProviderService.class), providerServiceInBean);
 
-        //ensure aspect invoked (from log and verify)
+        //ensure aspect invoked
         final AnAspect anAspect = applicationContext.getBean(AnAspect.class);
-        Assertions.assertEquals(2, anAspect.invocationCounter.get());
+        Assertions.assertEquals(4, anAspect.invocationCounter.get());
     }
 
     @Override
     public int getOrder() {
         return Integer.MAX_VALUE;
     }
-
 }

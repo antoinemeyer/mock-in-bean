@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
  * Special kind of {@link BeanFieldState} handling proxied beans (like aspects).<br>
  * The mock is not injected into the <code>field</code> but into the <code>target</code> of its {@link TargetSource}.
  * @author Antoine Meyer
+ * @see https://github.com/antoinemeyer/mock-in-bean/issues/23
  */
 class ProxiedBeanFieldState extends BeanFieldState {
 

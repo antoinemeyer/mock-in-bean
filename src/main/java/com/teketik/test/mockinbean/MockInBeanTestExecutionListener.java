@@ -64,7 +64,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
                 beanField.setAccessible(true);
                 final Object beanFieldValue = ReflectionUtils.getField(beanField, inBean);
                 final TargetSource proxyTarget = BeanUtils.getProxyTarget(beanFieldValue);
-                BeanFieldState beanFieldState;
+                final BeanFieldState beanFieldState;
                 if (proxyTarget != null) {
                     beanFieldState = new ProxiedBeanFieldState(inBean, beanField, beanFieldValue, proxyTarget, definition);
                 } else {
@@ -116,6 +116,7 @@ class MockInBeanTestExecutionListener extends AbstractTestExecutionListener {
                 //if the target bean has been spied on, need to push into this spy as well (to allow mock in spies)
                 Optional.ofNullable(spyTracker.get(bean))
                     .ifPresent(spy ->inject(fieldState.field, spy, mockOrSpy));
+
             });
 
         super.beforeTestMethod(testContext);

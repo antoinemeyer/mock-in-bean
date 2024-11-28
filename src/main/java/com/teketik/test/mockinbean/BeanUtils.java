@@ -75,7 +75,7 @@ abstract class BeanUtils {
             } else {
                 results[1] = Boolean.FALSE; //multiple matching fields
             }
-        }, field -> field.getType().equals(type));
+        }, field -> field.getType().isAssignableFrom(type));
         if (results[0] != null) {
             Assert.isTrue(
                 !(results[0] instanceof Boolean),

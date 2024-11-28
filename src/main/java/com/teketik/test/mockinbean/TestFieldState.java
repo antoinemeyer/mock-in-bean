@@ -6,8 +6,8 @@ import java.lang.reflect.Field;
 
 class TestFieldState extends FieldState {
 
-    TestFieldState(Field targetField, Object originalValue, Definition definition) {
-        super(targetField, originalValue, definition);
+    TestFieldState(Field targetField, Definition definition) {
+        super(targetField, definition);
     }
 
     @Override

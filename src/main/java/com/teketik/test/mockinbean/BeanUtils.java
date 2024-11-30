@@ -1,5 +1,7 @@
 package com.teketik.test.mockinbean;
 
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
@@ -44,8 +46,8 @@ abstract class BeanUtils {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No beans of type " + type + " and name " + name));
         }
-        return AopUtils.isAopProxy(beanOrProxy) 
-            ? (T) AopProxyUtils.getSingletonTarget(beanOrProxy) 
+        return AopUtils.isAopProxy(beanOrProxy)
+            ? (T) AopProxyUtils.getSingletonTarget(beanOrProxy)
             : beanOrProxy;
     }
 
@@ -73,7 +75,7 @@ abstract class BeanUtils {
             } else {
                 results[1] = Boolean.FALSE; //multiple matching fields
             }
-        }, field -> field.getType().equals(type));
+        }, field -> field.getType().isAssignableFrom(type));
         if (results[0] != null) {
             Assert.isTrue(
                 !(results[0] instanceof Boolean),
@@ -92,6 +94,29 @@ abstract class BeanUtils {
                     )
             );
             return (Field) results[1];
+        }
+        return null;
+    }
+
+    static @Nullable TargetSource getProxyTarget(Object candidate) {
+        try {
+            while (AopUtils.isAopProxy(candidate) && candidate instanceof Advised) {
+                Advised advised = (Advised) candidate;
+                TargetSource targetSource = advised.getTargetSource();
+
+                if (targetSource.isStatic()) {
+                    Object target = targetSource.getTarget();
+
+                    if (target == null || !AopUtils.isAopProxy(target)) {
+                        return targetSource;
+                    }
+                    candidate = target;
+                } else {
+                    return null;
+                }
+            }
+        } catch (Throwable ex) {
+            throw new IllegalStateException("Failed to unwrap proxied object", ex);
         }
         return null;
     }

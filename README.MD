@@ -1,6 +1,6 @@
 # Mock in Bean
 
-[@MockInBean](src/main/java/com/teketik/test/mockinbean/MockInBean.java) and [@SpyInBean](src/main/java/com/teketik/test/mockinbean/SpyInBean.java) are alternatives to @MockBean and @SpyBean for Spring Boot tests *(>= 2.2.0 including >= 3.X.X)*.
+[@MockInBean](src/main/java/com/teketik/test/mockinbean/MockInBean.java) and [@SpyInBean](src/main/java/com/teketik/test/mockinbean/SpyInBean.java) are alternatives to @MockBean and @SpyBean for Spring Boot tests *(>= 2.6.15 including >= 3.X.X)*.
 
 They surgically replace a field value in a Spring Bean by a Mock/Spy for the duration of a test and set back the original value afterwards, leaving the Spring Context clean.
 
@@ -86,7 +86,7 @@ Simply include the maven dependency (from central maven) to start using @MockInB
 <dependency>
   <groupId>com.teketik</groupId>
   <artifactId>mock-in-bean</artifactId>
-  <version>boot2-v1.7</version>
+  <version>boot2-v1.8</version>
   <scope>test</scope>
 </dependency>
 ```

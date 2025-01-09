@@ -100,7 +100,7 @@ abstract class BeanUtils {
 
     static @Nullable TargetSource getProxyTarget(Object candidate) {
         try {
-            while (AopUtils.isAopProxy(candidate) && candidate instanceof Advised) {
+            while (AopUtils.isCglibProxy(candidate) && candidate instanceof Advised) {
                 Advised advised = (Advised) candidate;
                 TargetSource targetSource = advised.getTargetSource();
 
